@@ -37,11 +37,12 @@ import Crypto.Number.Generate (generateMax, generateBetween)
 --
 --  4 input values (m = 4)
 
-sonicProtocol :: ArithCircuit f -> Assignment f -> SRS -> IO Bool
+sonicProtocol :: ArithCircuit f -> Assignment f -> SRS -> f -> IO Bool
 sonicProtocol
   circuit@(ArithCircuit gates wV cs) assignment cs
   assignment@(Assignment aL aR aO)
-  srs = do
+  srs 
+  x = do
     (proof, y, z, ys) <- prover srs gateInputs arithCircuit x
     pure $ verifier srs arithCircuit proof y z ys
 
@@ -70,7 +71,7 @@ runExample = do
   assignment = Assignment aL aR aO
 
   -- Run protocol
-  sonicProtocol arithCircuit assignment srs
+  sonicProtocol arithCircuit assignment srs x
 
   where
     gateWeights :: GateWeights Fr
