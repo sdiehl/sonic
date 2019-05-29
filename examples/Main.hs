@@ -1,25 +1,5 @@
-<p align="center">
-  <a href="http://www.adjoint.io"><img src="https://www.adjoint.io/assets/img/adjoint-logo@2x.png" width="250"/></a>
-</p>
+module Main where
 
-[Sonic](https://eprint.iacr.org/2019/550.pdf) is a zk-SNARK protocol for general
-arithmetic circuit satisfiability with universal and updatable Structured Reference String (SRS) that scales linearly in size.
-
-Sonic requires a trusted setup for an SRS, but the SRS can be continually
-strengthened. Moreover, Sonic only requires a single setup for all circuits.
-
-Usage
------
-
-Sonic allows a prover to demonstrate knowledge of a hidden witness (a, b, c) for
-a given constraint system. Sonic defines its constraint system with respect to
-the two-variate polynomial equation used in
-[Bulletproofs](https://eprint.iacr.org/2017/1066.pdf). In the Bulletproofs
-polynomial equation, there is one polynomial that is determined by
-the statement and a second that is determined by the constraints.
-
-
-```haskell
 import Protolude
 import Crypto.Number.Generate (generateBetween)
 import Bulletproofs.ArithmeticCircuit
@@ -98,18 +78,3 @@ main = do
                          ,[0, 0]
                          ,[0, 0]]
                   }
-
-```
-
-References
-----------
-
-1.  Maller M., Bowe S., Kohlweiss M. and Meiklejohn S.
-    "Sonic: Zero-Knowledge SNARKs from Linear-Size Universal and Updateable
-    Structured Reference Strings"
-	(https://eprint.iacr.org/2019/099)
-
-
-2.  Bunz B., Bootle J., Boneh D., Poelstra A., Wuille P., Maxwell G.
-    "Bulletproofs: Short Proofs for Confidential Transactions and More".
-	(https://eprint.iacr.org/2017/1066.pdf)

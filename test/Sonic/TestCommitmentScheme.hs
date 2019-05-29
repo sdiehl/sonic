@@ -15,7 +15,6 @@ import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Utils
 import qualified Sonic.SRS as SRS
--- import Poly
 
 -- Example of arithmetic circuit
 --
