@@ -6,7 +6,7 @@
 arithmetic circuit satisfiability with universal and updatable Structured Reference String (SRS) that scales linearly in size.
 
 Sonic requires a trusted setup for an SRS, but the SRS can be continually
-strenghtened. Moreover, Sonic only requires a single setup for all circuits.
+strengthened. Moreover, Sonic only requires a single setup for all circuits.
 
 Usage
 -----
