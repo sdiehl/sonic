@@ -41,10 +41,9 @@ sonicProtocol :: ArithCircuit f -> Assignment f -> SRS -> IO Bool
 sonicProtocol
   circuit@(ArithCircuit gates wV cs) assignment cs
   assignment@(Assignment aL aR aO)
-  srs
-  = do
-	(proof, y, z, ys) <- prover srs gateInputs arithCircuit
-	pure $ verifier srs arithCircuit proof y z ys
+  srs = do
+    (proof, y, z, ys) <- prover srs gateInputs arithCircuit
+    pure $ verifier srs arithCircuit proof y z ys
 
 runExample :: IO Bool
 runExample = do
@@ -56,6 +55,11 @@ runExample = do
 
   -- Arithmetic circuit
   cs = [0, -z, -z, -z, -z]
+  wV = [[0, 0, 0, 0]
+       ,[1, 0, 0, 0]
+       ,[0, 0, 1, 0]
+       ,[0, 1, 0 ,0]
+       ,[0, 0, 0, 1]]
   arithCircuit = ArithCircuit gateWeights wV cs
 
   -- Assignment
@@ -69,15 +73,15 @@ runExample = do
   sonicProtocol arithCircuit assignment srs
 
   where
-	gateWeights :: GateWeights Fr
-	gateWeights = GateWeights
+    gateWeights :: GateWeights Fr
+    gateWeights = GateWeights
     { wL = [[0, 0]
            ,[1, 0]
            ,[0, 1]
            ,[0, 0]
            ,[0, 0]]
     , wR = [[0, 0]
-	       ,[0, 0]
+	   ,[0, 0]
            ,[0, 0]
            ,[1, 0]
            ,[0, 1]]
@@ -86,11 +90,6 @@ runExample = do
            ,[0, 0]
            ,[0, 0]
            ,[0, 0]]
-	, wV = [[0, 0, 0, 0]
-		   ,[1, 0, 0, 0]
-           ,[0, 0, 1, 0]
-           ,[0, 1, 0 ,0]
-           ,[0, 0, 0, 1]]
     }
 ```
 
