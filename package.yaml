@@ -1,0 +1,54 @@
+name:                sonic
+version:             0.1.0
+github:              "adjoint-io/sonic"
+license:             MIT
+maintainer:          "Adjoint Inc (info@adjoint.io)"
+category:            Cryptography
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+description:         Please see the README on GitHub at <https://github.com/adjoint-io/sonic#readme>
+
+dependencies:
+- base
+- pairing
+- protolude
+- cryptonite
+- bulletproofs
+- wl-pprint-text
+- polynomial
+
+default-extensions:
+  - LambdaCase
+  - RecordWildCards
+  - OverloadedStrings
+  - NoImplicitPrelude
+  - FlexibleInstances
+  - FlexibleContexts
+  - ScopedTypeVariables
+  - RankNTypes
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - Sonic.CommitmentScheme
+  - Sonic.Constraints
+  - Sonic.Protocol
+  - Sonic.SRS
+  - Sonic.Signature
+  - Sonic.Utils
+
+
+tests:
+  sonic-test:
+    main: Driver.hs
+    source-dirs: test
+    dependencies:
+      - sonic
+      - tasty
+      - tasty-discover
+      - tasty-hunit
+      - tasty-quickcheck
+      - QuickCheck
