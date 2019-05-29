@@ -1,7 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveAnyClass, DeriveGeneric #-}
 module Sonic.Utils where

@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, FlexibleInstances, OverlappingInstances, RankNTypes #-}
+{-# LANGUAGE RecordWildCards, FlexibleInstances, RankNTypes #-}
 module Sonic.Constraints where
 
 import Protolude hiding (head)
