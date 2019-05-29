@@ -23,15 +23,15 @@ commitPoly
   => SRS
   -> Integer
   -> f
-  -> f
   -> Laurent f
   -> Commitment
-commitPoly SRS{..} maxm alpha x poly
-  = if diff >= 0
-    then g1 `expn` (alpha * (x ^ (d - maxm)) * (evalLaurent poly x))
-    else g1 `expn` (alpha * (recip x ^ (abs (d - maxm))) * (evalLaurent poly x))
+commitPoly SRS{..} maxm x poly
+  = gxi `expn` (evalLaurent poly x)
   where
     diff = fromInteger (d - maxm)
+    gxi = if diff >= 0
+          then gPositiveAlphaX !! (diff - 1)
+          else gNegativeAlphaX !! (abs diff - 1)
 
 openPoly
   :: (AsInteger f, Num f, Eq f, Fractional f)

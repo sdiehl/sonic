@@ -29,15 +29,14 @@ hscP
   => SRS
   -> GateWeights f
   -> f
-  -> f
   -> [f]
   -> m (HscProof f)
-hscP srs@SRS{..} weights alpha x ys = do
-  let ss = (\yi -> commitPoly srs d alpha x (evalOnY yi (sPoly weights))) <$> ys
+hscP srs@SRS{..} weights x ys = do
+  let ss = (\yi -> commitPoly srs d x (evalOnY yi (sPoly weights))) <$> ys
   -- Random oracle
   u <- Utils.random
   let suX = evalOnX u (sPoly weights)
-      commit = commitPoly srs d alpha x suX
+      commit = commitPoly srs d x suX
       -- <> (g1 `expn` (evalLaurent x suX))
       sW = zipWith (\yi si -> openPoly srs si x u (evalOnY yi (sPoly weights))) ys ss
       sQ = (\yi -> openPoly srs commit x yi suX) <$> ys

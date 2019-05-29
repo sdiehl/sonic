@@ -10,9 +10,7 @@ import Pairing.CyclicGroup (AsInteger(..))
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
 
--- import Text.Pretty.Simple
 import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
--- import Poly
 import Sonic.SRS
 import Sonic.Constraints
 import Sonic.CommitmentScheme
@@ -38,23 +36,22 @@ prover
   -> Assignment f
   -> ArithCircuit f
   -> f
-  -> f
   -> m (Proof f, f, f, [f])
-prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} alpha x = do
+prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} x = do
   cns <- replicateM 4 Utils.random
   let rXY = rPoly assignment
       sumcXY = newLaurent
                 (negate (2 * n + 4))
                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
       polyR' = addLaurent rXY sumcXY
-      commitR = commitPoly srs (fromIntegral n) alpha x (evalOnY 1 polyR')
+      commitR = commitPoly srs (fromIntegral n) x (evalOnY 1 polyR')
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   y <- Utils.random
   let ky = polyK cs n
   let sP = sPoly weights
   let tP = tPoly polyR' sP ky
-  let commitT = commitPoly srs (d srs) alpha x (evalOnY y tP)
+  let commitT = commitPoly srs (d srs) x (evalOnY y tP)
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   z <- Utils.random
@@ -64,7 +61,7 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} alpha x = do
 
   let s = evalLaurent (evalOnY y sP) z
   ys <- replicateM m Utils.random
-  hscProof <- hscP srs weights alpha x ys
+  hscProof <- hscP srs weights x ys
 
   pure ( Proof
           { prR = commitR

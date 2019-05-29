@@ -62,8 +62,9 @@ test_sonic = localOption (QuickCheckTests 5)
         gateWeights = GateWeights wL wR wO
         gateInputs = Assignment aL aR aO
         arithCircuit = ArithCircuit gateWeights wV cs
+
     let srs = SRS.new d x alpha
 
-    (proof, y, z, ys) <- QCM.run $ prover srs gateInputs arithCircuit alpha x
+    (proof, y, z, ys) <- QCM.run $ prover srs gateInputs arithCircuit x
 
     QCM.assert $ verifier srs arithCircuit proof y z ys
