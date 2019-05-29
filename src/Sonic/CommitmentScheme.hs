@@ -30,7 +30,7 @@ commitPoly SRS{..} maxm x poly
   where
     diff = fromInteger (d - maxm)
     gxi = if diff >= 0
-          then gPositiveAlphaX !! (diff - 1)
+          then gPositiveAlphaX !! (diff)
           else gNegativeAlphaX !! (abs diff - 1)
 
 openPoly
