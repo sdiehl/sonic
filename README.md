@@ -42,7 +42,7 @@ sonicProtocol
   circuit@(ArithCircuit gates wV cs) assignment cs
   assignment@(Assignment aL aR aO)
   srs = do
-    (proof, y, z, ys) <- prover srs gateInputs arithCircuit
+    (proof, y, z, ys) <- prover srs gateInputs arithCircuit x
     pure $ verifier srs arithCircuit proof y z ys
 
 runExample :: IO Bool
