@@ -9,14 +9,14 @@ import Sonic.SRS as SRS
 import Sonic.Protocol as Protocol
 import Sonic.Utils as Utils
 
-sonicProtocol :: (Fractional f, Eq f, AsInteger f) => ArithCircuit f -> Assignment f -> SRS -> f -> IO Bool
-sonicProtocol
-  circuit@(ArithCircuit gates wV cs)
-  assignment@(Assignment aL aR aO)
-  srs
-  x = do
-    (proof, y, z, ys) <- prover srs assignment circuit x
-    pure $ verifier srs circuit proof y z ys
+sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
+sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
+  -- Setup for an SRS
+  srs <- SRS.new <$> generateBetween 2 100 <*> pure x <*> Fr.random
+  -- Prover
+  (proof, y, z, ys) <- prover srs assignment circuit x
+  -- Verifier
+  pure $ verifier srs circuit proof y z ys
 
 
 --  Example:
@@ -32,14 +32,8 @@ sonicProtocol
 --  aL[1] * aR[1] = aO[1]
 --
 --  4 input values (m = 4)
-main :: IO ()
-main = do
-  -- SRS
-  x <- Fr.random
-  alpha <- Fr.random
-  d <- generateBetween 2 100
-  let srs = SRS.new d x alpha
-
+runExample :: IO ()
+runExample = do
   -- Arithmetic circuit
   z <- Fr.random
   let cs = [0, -z, -z, -z, -z]
@@ -57,7 +51,7 @@ main = do
       assignment = Assignment aL aR aO
 
   -- Run protocol
-  print =<< sonicProtocol arithCircuit assignment srs x
+  print =<< sonicProtocol arithCircuit assignment =<< Fr.random
 
   where
     gateWeights :: GateWeights Fr
@@ -78,3 +72,6 @@ main = do
                          ,[0, 0]
                          ,[0, 0]]
                   }
+
+main :: IO ()
+main = runExample
