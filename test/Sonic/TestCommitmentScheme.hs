@@ -15,7 +15,6 @@ import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Utils
 import qualified Sonic.SRS as SRS
--- import Poly
 
 -- Example of arithmetic circuit
 --
@@ -61,7 +60,7 @@ test_poly_commit_scheme
       let srs = SRS.new d x alpha
           n = length aL
           fX = evalOnY y $ tPoly (rPoly gateInputs) (sPoly gateWeights) (polyK cs n)
-          commitment = commitPoly srs max alpha x fX
+          commitment = commitPoly srs max x fX
           opening = openPoly srs commitment x z fX
 
       QCM.assert $ pcV srs max commitment z opening

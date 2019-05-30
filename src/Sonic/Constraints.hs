@@ -8,7 +8,6 @@ import Pairing.Fr as Fr (Fr, new)
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial (poly, Endianness(..))
 import Math.Polynomial.Laurent
--- import Poly
 import Sonic.Utils
 
 compressMulConstraints :: Assignment Fr -> Fr -> Fr

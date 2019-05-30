@@ -40,6 +40,16 @@ library:
   - Sonic.Signature
   - Sonic.Utils
 
+executables:
+  sonic-example:
+    main:                Main.hs
+    source-dirs:         examples
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - sonic
 
 tests:
   sonic-test:

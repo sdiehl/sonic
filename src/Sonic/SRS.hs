@@ -28,9 +28,9 @@ new d x alpha
         , gPositiveX = (\i -> expn g1 (x ^ i)) <$> [0..d]
         , hNegativeX = (\i -> expn g2 (xInv ^ i)) <$> [1..d]
         , hPositiveX = (\i -> expn g2 (x ^ i)) <$> [0..d]
-        -- Notice that we omit g^alpha, i.e. when i=0
         , gNegativeAlphaX = (\i -> expn g1 (alpha * (xInv ^ i))) <$> [1..d]
-        , gPositiveAlphaX = (\i -> expn g1 (alpha * (x ^ i))) <$> [1..d]
+        -- Warning: We are sharing g^alpha, i.e. when i=0 in gPositiveAlphaX
+        , gPositiveAlphaX = (\i -> expn g1 (alpha * (x ^ i))) <$> [0..d]
         , hNegativeAlphaX = (\i -> expn g2 (alpha * (xInv ^ i))) <$> [1..d]
         , hPositiveAlphaX = (\i -> expn g2 (alpha * (x ^ i))) <$> [0..d]
         , srsPairing = reducedPairing g1 (expn g2 alpha)
