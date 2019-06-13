@@ -60,8 +60,8 @@ test_poly_commit_scheme
       let srs = SRS.new d x alpha
           n = length aL
           fX = evalOnY y $ tPoly (rPoly gateInputs) (sPoly gateWeights) (polyK cs n)
-          commitment = commitPoly srs max fX x
-          opening = openPoly srs commitment z fX x
+          commitment = commitPoly srs max fX
+          opening = openPoly srs commitment z fX
 
       QCM.assert $ pcV srs max commitment z opening
 

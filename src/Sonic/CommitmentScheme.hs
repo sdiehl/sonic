@@ -23,9 +23,8 @@ commitPoly
   => SRS
   -> Integer
   -> Laurent f
-  -> f
   -> Commitment
-commitPoly SRS{..} maxm fX x
+commitPoly SRS{..} maxm fX
   = foldl' (<>) mempty (negPowers ++ posPowers)
   where
     diff = fromInteger (d - maxm)
@@ -40,12 +39,6 @@ commitPoly SRS{..} maxm fX x
         else (take 0 coeffsL, take 1 coeffsL, drop 1 coeffsL)
     negPowers = zipWith expn gNegativeAlphaX (reverse negCoeffs)
     posPowers = zipWith expn gPositiveAlphaX posCoeffs
-  -- = gxi `expn` (evalLaurent fX x)
-  -- where
-  --   diff = fromInteger (d - maxm)
-  --   gxi = if diff >= 0
-  --         then gPositiveAlphaX !! (diff)
-  --         else gNegativeAlphaX !! (abs diff - 1)
 
 openPoly
   :: (Show f, AsInteger f, Num f, Eq f, Fractional f)
@@ -53,13 +46,10 @@ openPoly
   -> Commitment
   -> f
   -> Laurent f
-  -> f
   -> Opening f
-openPoly SRS{..} _commitment z fX x
+openPoly SRS{..} _commitment z fX
   = let fz = evalLaurent fX z
         wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
-        w' = g1 `expn` (evalLaurent wPoly x)
-
         expL = expLaurent wPoly
         coeffsL = coeffsLaurent wPoly
         (negCoeffs, posCoeffs)

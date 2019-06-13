@@ -35,16 +35,15 @@ prover
   => SRS
   -> Assignment f
   -> ArithCircuit f
-  -> f
   -> m (Proof f, f, f, [f])
-prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} x = do
+prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
   cns <- replicateM 4 Utils.random
   let rXY = rPoly assignment
       sumcXY = newLaurent
                 (negate (2 * n + 4))
                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
       polyR' = addLaurent rXY sumcXY
-      commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR') x
+      commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   y <- Utils.random
@@ -53,17 +52,17 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} x = do
   let tP = tPoly polyR' sP ky
       tPY = evalOnY y tP
 
-  let commitT = commitPoly srs (d srs) tPY x
+  let commitT = commitPoly srs (d srs) tPY
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   z <- Utils.random
-  let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR') x
-      (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR') x
-      (t', wt) = openPoly srs commitT z (evalOnY y tP) x
+  let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
+      (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
+      (t', wt) = openPoly srs commitT z (evalOnY y tP)
 
   let s = evalLaurent (evalOnY y sP) z
   ys <- replicateM m Utils.random
-  hscProof <- hscP srs weights ys x
+  hscProof <- hscP srs weights ys
   pure ( Proof
           { prR = commitR
           , prT = commitT

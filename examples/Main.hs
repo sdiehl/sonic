@@ -14,7 +14,7 @@ sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
   -- Setup for an SRS
   srs <- SRS.new <$> generateBetween 2 100 <*> pure x <*> Fr.random
   -- Prover
-  (proof, y, z, ys) <- prover srs assignment circuit x
+  (proof, y, z, ys) <- prover srs assignment circuit
   -- Verifier
   pure $ verifier srs circuit proof y z ys
 

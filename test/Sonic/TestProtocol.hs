@@ -65,6 +65,6 @@ test_sonic = localOption (QuickCheckTests 10)
 
     let srs = SRS.new d x alpha
 
-    (proof, y, z, ys) <- QCM.run $ prover srs gateInputs arithCircuit x
+    (proof, y, z, ys) <- QCM.run $ prover srs gateInputs arithCircuit
 
     QCM.assert $ verifier srs arithCircuit proof y z ys

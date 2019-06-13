@@ -29,6 +29,7 @@ new d x alpha
         , hNegativeX = (\i -> expn g2 (xInv ^ i)) <$> [1..d]
         , hPositiveX = (\i -> expn g2 (x ^ i)) <$> [0..d]
         , gNegativeAlphaX = (\i -> expn g1 (alpha * (xInv ^ i))) <$> [1..d]
+        -- g^alpha is not shared
         , gPositiveAlphaX = (\i -> expn g1 (alpha * (x ^ i))) <$> [1..d]
         , hNegativeAlphaX = (\i -> expn g2 (alpha * (xInv ^ i))) <$> [1..d]
         , hPositiveAlphaX = (\i -> expn g2 (alpha * (x ^ i))) <$> [0..d]
