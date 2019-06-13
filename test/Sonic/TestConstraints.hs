@@ -41,7 +41,6 @@ rPolyOutput = newLaurent (-4)
   , newLaurent 2 [2]
   ]
 
--- see notebook
 sPolyOutput :: Laurent (Laurent Fr)
 sPolyOutput = newLaurent (-2)
     [ newLaurent 0

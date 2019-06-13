@@ -25,24 +25,23 @@ data HscProof f = HscProof
 
 -- Helper protocol
 hscP
-  :: (Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
+  :: (Show f, Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
   => SRS
   -> GateWeights f
-  -> f
   -> [f]
+  -> f
   -> m (HscProof f)
-hscP srs@SRS{..} weights x ys = do
-  let ss = (\yi -> commitPoly srs d x (evalOnY yi (sPoly weights))) <$> ys
+hscP srs@SRS{..} weights ys x = do
+  let ss = (\yi -> commitPoly srs d (evalOnY yi (sPoly weights)) x) <$> ys
   -- Random oracle
   u <- Utils.random
   let suX = evalOnX u (sPoly weights)
-      commit = commitPoly srs d x suX
-      -- <> (g1 `expn` (evalLaurent x suX))
-      sW = zipWith (\yi si -> openPoly srs si x u (evalOnY yi (sPoly weights))) ys ss
-      sQ = (\yi -> openPoly srs commit x yi suX) <$> ys
+      commit = commitPoly srs d suX x
+      sW = zipWith (\yi si -> openPoly srs si u (evalOnY yi (sPoly weights)) x) ys ss
+      sQ = (\yi -> openPoly srs commit yi suX x) <$> ys
   -- Random oracle
   z <- Utils.random
-  let (suz, qz) = openPoly srs commit x z suX
+  let (suz, qz) = openPoly srs commit z suX x
   pure HscProof
           { hscS = ss
           , hscW = sW

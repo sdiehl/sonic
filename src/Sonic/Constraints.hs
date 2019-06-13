@@ -20,7 +20,9 @@ rPoly
   => Assignment f
   -> Laurent (Laurent f)
 rPoly Assignment{..} =
-  newLaurent (negate (2 * n)) (reorder $ newLaurent 0 [] : (concat $ zipWith4 f aL aR aO [1..]))
+  newLaurent
+    (negate (2 * n))
+    (reorder $ newLaurent 0 [] : (concat $ zipWith4 f aL aR aO [1..]))
   where
     f ai bi ci i = [newLaurent i [ai], newLaurent (-i) [bi], newLaurent (-i - n) [ci]]
     reorder = sortBy (\l1 l2 -> compare (expLaurent l1) (expLaurent l2))

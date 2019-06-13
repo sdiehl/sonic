@@ -19,32 +19,56 @@ type Commitment = G1
 type Opening f = (f, G1)
 
 commitPoly
-  :: (AsInteger f, Num f, Eq f, Fractional f)
+  :: (Show f, AsInteger f, Num f, Eq f, Fractional f)
   => SRS
   -> Integer
-  -> f
   -> Laurent f
+  -> f
   -> Commitment
-commitPoly SRS{..} maxm x poly
-  = gxi `expn` (evalLaurent poly x)
+commitPoly SRS{..} maxm fX x
+  = foldl' (<>) mempty (negPowers ++ posPowers)
   where
     diff = fromInteger (d - maxm)
-    gxi = if diff >= 0
-          then gPositiveAlphaX !! (diff)
-          else gNegativeAlphaX !! (abs diff - 1)
+    powofx = newLaurent diff [1]
+    xfX =  multLaurent powofx fX
+    expL = expLaurent xfX
+    coeffsL = coeffsLaurent xfX
+    -- The constant term should always be 0
+    (negCoeffs, zeroCoeff, posCoeffs)
+      = if expL < 0
+        then (take (abs expL) coeffsL, take 1 $ drop (abs expL) coeffsL, drop (abs expL + 1) coeffsL)
+        else (take 0 coeffsL, take 1 coeffsL, drop 1 coeffsL)
+    negPowers = zipWith expn gNegativeAlphaX (reverse negCoeffs)
+    posPowers = zipWith expn gPositiveAlphaX posCoeffs
+  -- = gxi `expn` (evalLaurent fX x)
+  -- where
+  --   diff = fromInteger (d - maxm)
+  --   gxi = if diff >= 0
+  --         then gPositiveAlphaX !! (diff)
+  --         else gNegativeAlphaX !! (abs diff - 1)
 
 openPoly
-  :: (AsInteger f, Num f, Eq f, Fractional f)
+  :: (Show f, AsInteger f, Num f, Eq f, Fractional f)
   => SRS
   -> Commitment
   -> f
-  -> f
   -> Laurent f
+  -> f
   -> Opening f
-openPoly srs _commitment x z fX
+openPoly SRS{..} _commitment z fX x
   = let fz = evalLaurent fX z
         wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
-        w = g1 `expn` (evalLaurent wPoly x)
+        w' = g1 `expn` (evalLaurent wPoly x)
+
+        expL = expLaurent wPoly
+        coeffsL = coeffsLaurent wPoly
+        (negCoeffs, posCoeffs)
+          = if expL < 0
+            then splitAt (abs expL) coeffsL
+            else splitAt 0 coeffsL
+        negPowers = zipWith expn gNegativeX (reverse negCoeffs)
+        posPowers = zipWith expn gPositiveX posCoeffs
+        w = foldl' (<>) mempty (negPowers ++ posPowers)
     in (fz, w)
 
 pcV

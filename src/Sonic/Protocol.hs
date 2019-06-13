@@ -31,7 +31,7 @@ data Proof f = Proof
   }
 
 prover
-  :: (Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
+  :: (Show f, Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
   => SRS
   -> Assignment f
   -> ArithCircuit f
@@ -44,25 +44,26 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} x = do
                 (negate (2 * n + 4))
                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
       polyR' = addLaurent rXY sumcXY
-      commitR = commitPoly srs (fromIntegral n) x (evalOnY 1 polyR')
+      commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR') x
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   y <- Utils.random
   let ky = polyK cs n
   let sP = sPoly weights
   let tP = tPoly polyR' sP ky
-  let commitT = commitPoly srs (d srs) x (evalOnY y tP)
+      tPY = evalOnY y tP
+
+  let commitT = commitPoly srs (d srs) tPY x
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   z <- Utils.random
-  let (a, wa) = openPoly srs commitR x z (evalOnY 1 polyR')
-      (b, wb) = openPoly srs commitR x (y * z) (evalOnY 1 polyR')
-      (t', wt) = openPoly srs commitT x z (evalOnY y tP)
+  let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR') x
+      (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR') x
+      (t', wt) = openPoly srs commitT z (evalOnY y tP) x
 
   let s = evalLaurent (evalOnY y sP) z
   ys <- replicateM m Utils.random
-  hscProof <- hscP srs weights x ys
-
+  hscProof <- hscP srs weights ys x
   pure ( Proof
           { prR = commitR
           , prT = commitT
@@ -96,11 +97,11 @@ verifier
 verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
   = let t = (prA * (prB + prS)) + (negate $ evalLaurent ky y)
         checks = [ hscV srs ys weights prHscProof
-                , pcV srs (fromIntegral n) prR z (prA, prWa)
-                , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
-                , pcV srs d prT z (t, prWt)
+                 , pcV srs (fromIntegral n) prR z (prA, prWa)
+                 , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
+                 , pcV srs d prT z (t, prWt)
                 ]
-    in and checks
+    in and $ traceShow checks checks
   where
     n = length . head . wL $ weights
     ky = polyK cs n

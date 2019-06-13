@@ -27,7 +27,7 @@ import qualified Sonic.SRS as SRS
 --
 --  4 input values (m = 4)
 test_sonic :: TestTree
-test_sonic = localOption (QuickCheckTests 5)
+test_sonic = localOption (QuickCheckTests 10)
   $ testProperty "Sonic protocol" $ QCM.monadicIO $ do
     x <- QCM.run Fr.random
     z <- QCM.run Fr.random

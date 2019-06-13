@@ -46,6 +46,6 @@ test_signatures_of_computation
             m = length wL
 
         ys <- QCM.run $ replicateM m Fr.random
-        proof <- QCM.run $ hscP srs gateWeights x ys
+        proof <- QCM.run $ hscP srs gateWeights ys x
 
         QCM.assert $ hscV srs ys gateWeights proof
