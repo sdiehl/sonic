@@ -1,7 +1,7 @@
+{-# LANGUAGE TypeApplications #-} 
 module Sonic.TestProtocol where
 
 import Protolude
-import Pairing.Fr as Fr (Fr(..), new, random)
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
@@ -10,8 +10,9 @@ import qualified Test.QuickCheck.Monadic as QCM
 import Crypto.Number.Generate (generateMax, generateBetween)
 
 import Bulletproofs.ArithmeticCircuit
+import Bulletproofs.Fq
 import Sonic.Protocol
-import Sonic.Utils
+import Sonic.Utils as Utils
 import qualified Sonic.SRS as SRS
 
 --  5 linear constraints (q = 5):
@@ -29,9 +30,9 @@ import qualified Sonic.SRS as SRS
 test_sonic :: TestTree
 test_sonic = localOption (QuickCheckTests 10)
   $ testProperty "Sonic protocol" $ QCM.monadicIO $ do
-    x <- QCM.run Fr.random
-    z <- QCM.run Fr.random
-    alpha <- QCM.run Fr.random
+    x <- QCM.run (Utils.random @(PF Fq))
+    z <- QCM.run (Utils.random @(PF Fq))
+    alpha <- QCM.run (Utils.random @(PF Fq))
     d <- QCM.run (generateBetween 2 100)
 
     let wL = [[0, 0]

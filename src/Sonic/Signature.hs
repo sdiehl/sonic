@@ -5,10 +5,11 @@ module Sonic.Signature where
 import Protolude
 import Sonic.SRS
 import Crypto.Random (MonadRandom)
-import Pairing.CyclicGroup (AsInteger(..))
 import Pairing.Group
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
+import PrimeField
+
 import Sonic.Utils as Utils
 import Sonic.Constraints
 import Sonic.CommitmentScheme
@@ -25,11 +26,11 @@ data HscProof f = HscProof
 
 -- Helper protocol
 hscP
-  :: (Show f, Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
+  :: (KnownNat p, MonadRandom m)
   => SRS
-  -> GateWeights f
-  -> [f]
-  -> m (HscProof f)
+  -> GateWeights (PrimeField p)
+  -> [PrimeField p]
+  -> m (HscProof (PrimeField p))
 hscP srs@SRS{..} weights ys = do
   let ss = (\yi -> commitPoly srs d (evalOnY yi (sPoly weights))) <$> ys
   -- Random oracle
@@ -54,11 +55,11 @@ hscP srs@SRS{..} weights ys = do
     m = length ys
 
 hscV
-  :: (Num f, Eq f, Fractional f, AsInteger f)
+  :: (KnownNat p)
   => SRS
-  -> [f]
-  -> GateWeights f
-  -> HscProof f
+  -> [PrimeField p]
+  -> GateWeights (PrimeField p)
+  -> HscProof (PrimeField p)
   -> Bool
 hscV srs@SRS{..} ys weights proof@HscProof{..}
   = let sz = evalLaurent (evalOnY hscZ (sPoly weights)) hscU

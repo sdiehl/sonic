@@ -1,8 +1,9 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 module Sonic.TestCommitmentScheme where
 
 import Protolude
-import Pairing.Fr as Fr (Fr(..), new, random)
+import Pairing.Fr as Fr (Fr(..))
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
@@ -13,7 +14,7 @@ import Crypto.Number.Generate (generateMax, generateBetween)
 import Bulletproofs.ArithmeticCircuit
 import Sonic.Constraints
 import Sonic.CommitmentScheme
-import Sonic.Utils
+import Sonic.Utils as Utils
 import qualified Sonic.SRS as SRS
 
 -- Example of arithmetic circuit
@@ -29,19 +30,20 @@ import qualified Sonic.SRS as SRS
 --             |
 --             | aO
 --             |
+-- TODO: Test it with different curves and Fields
 test_poly_commit_scheme :: TestTree
 test_poly_commit_scheme
   = testProperty "Polynomial commitment scheme" $ QCM.monadicIO $ do
-      x <- QCM.run Fr.random
-      y <- QCM.run Fr.random
-      z <- QCM.run Fr.random
-      alpha <- QCM.run Fr.random
+      x :: Fr <- QCM.run Utils.random
+      y <- QCM.run Utils.random
+      z <- QCM.run Utils.random
+      alpha <- QCM.run Utils.random
       d <- QCM.run (generateBetween 2 100)
       max <- QCM.run (generateBetween (d `quot` 2) (2*d-1))
 
-      let bL0 = 7
-          bR0 = 3
-          bL1 = 2
+      let bL0 :: Fr = 7
+          bR0 :: Fr = 3
+          bL1 :: Fr = 2
 
       let wL = [[1]
                ,[0]]
@@ -59,9 +61,9 @@ test_poly_commit_scheme
 
       let srs = SRS.new d x alpha
           n = length aL
-          fX = evalOnY y $ tPoly (rPoly gateInputs) (sPoly gateWeights) (polyK cs n)
+          fX = evalOnY y $ tPoly (rPoly gateInputs) (sPoly gateWeights) (kPoly cs n)
           commitment = commitPoly srs max fX
-          opening = openPoly srs commitment z fX
+      let opening = openPoly srs commitment z fX
 
       QCM.assert $ pcV srs max commitment z opening
 

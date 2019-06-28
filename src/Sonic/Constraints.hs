@@ -1,16 +1,23 @@
 {-# LANGUAGE RecordWildCards, FlexibleInstances, RankNTypes #-}
-module Sonic.Constraints where
+module Sonic.Constraints
+  ( compressMulConstraints
+  , rPoly
+  , sPoly
+  , tPoly
+  , kPoly
+  )
+where
 
 import Protolude hiding (head)
 import Data.List (zipWith4, head)
-import Pairing.CyclicGroup (CyclicGroup(..))
-import Pairing.Fr as Fr (Fr, new)
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial (poly, Endianness(..))
 import Math.Polynomial.Laurent
+import PrimeField
+
 import Sonic.Utils
 
-compressMulConstraints :: Assignment Fr -> Fr -> Fr
+compressMulConstraints :: (Num f) => Assignment f -> f -> f
 compressMulConstraints Assignment{..} y = sum $ zipWith4 f aL aR aO [1..]
   where
     f ai bi ci i = (ai * bi - ci) * ((y ^ i) + y ^ (-i))
@@ -48,11 +55,11 @@ sPoly GateWeights{..}
     -- ^ size(wL) = Q x n
 
 tPoly
-  :: (Eq f, Num f, Fractional f)
-  => Laurent (Laurent f)
-  -> Laurent (Laurent f)
-  -> Laurent f
-  -> Laurent (Laurent f)
+  :: (KnownNat p)
+  => Laurent (Laurent (PrimeField p))
+  -> Laurent (Laurent (PrimeField p))
+  -> Laurent (PrimeField p)
+  -> Laurent (Laurent (PrimeField p))
 tPoly rP sP kP
   -- r(X, 1) * (r(X,Y) + s(X, Y)) - k(Y)
   = addLaurent
@@ -62,9 +69,9 @@ tPoly rP sP kP
       )
      (convertToTwoVariateY $ negate kP)
 
-polyK
+kPoly
   :: (Eq f, Num f)
   => [f]
   -> Int
   -> Laurent f
-polyK k n = newLaurent (n+1) k
+kPoly k n = newLaurent (n+1) k

@@ -13,6 +13,7 @@ description:         Please see the README on GitHub at <https://github.com/adjo
 
 dependencies:
 - base
+- galois-field
 - pairing
 - protolude
 - cryptonite

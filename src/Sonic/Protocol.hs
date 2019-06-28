@@ -6,9 +6,9 @@ import Data.List (head)
 import Crypto.Random (MonadRandom)
 import Crypto.Number.Generate (generateMax)
 import Pairing.Group as Group (G1, G2, GT, g1, g2, expn)
-import Pairing.CyclicGroup (AsInteger(..))
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
+import PrimeField
 
 import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
 import Sonic.SRS
@@ -31,11 +31,11 @@ data Proof f = Proof
   }
 
 prover
-  :: (Show f, Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
+  :: (KnownNat p, MonadRandom m)
   => SRS
-  -> Assignment f
-  -> ArithCircuit f
-  -> m (Proof f, f, f, [f])
+  -> Assignment (PrimeField p)
+  -> ArithCircuit (PrimeField p)
+  -> m (Proof (PrimeField p), PrimeField p, PrimeField p, [PrimeField p])
 prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
   cns <- replicateM 4 Utils.random
   let rXY = rPoly assignment
@@ -47,10 +47,16 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
   y <- Utils.random
-  let ky = polyK cs n
+  let ky = kPoly cs n
   let sP = sPoly weights
   let tP = tPoly polyR' sP ky
       tPY = evalOnY y tP
+  -- traceShowM ("r: ", rXY)
+  -- traceShowM ("rPolynomial: ", pretty rXY)
+  -- traceShowM ("rPolynomial': ", pretty polyR')
+  -- traceShowM ("sPolynomial: ", pretty sP)
+
+  -- traceShowM ("tPolynomial: ", pretty tPY)
 
   let commitT = commitPoly srs (d srs) tPY
   -- zkV -> zkP: Send y to prover
@@ -85,13 +91,13 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
     m = length . wL $ weights
 
 verifier
-  :: (Num f, Eq f, Fractional f, AsInteger f)
+  :: (KnownNat p)
   => SRS
-  -> ArithCircuit f
-  -> Proof f
-  -> f
-  -> f
-  -> [f]
+  -> ArithCircuit (PrimeField p)
+  -> Proof (PrimeField p)
+  -> PrimeField p
+  -> PrimeField p
+  -> [PrimeField p]
   -> Bool
 verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
   = let t = (prA * (prB + prS)) + (negate $ evalLaurent ky y)
@@ -103,4 +109,4 @@ verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
     in and $ traceShow checks checks
   where
     n = length . head . wL $ weights
-    ky = polyK cs n
+    ky = kPoly cs n

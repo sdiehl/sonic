@@ -1,16 +1,19 @@
 {-# LANGUAGE RecordWildCards #-}
-module Sonic.CommitmentScheme where
+module Sonic.CommitmentScheme
+  ( commitPoly
+  , openPoly
+  , pcV
+  )
+where
 
 import Protolude
 import Data.List ((!!))
 import Pairing.Group as Group (G1, G2, GT, g1, g2, expn)
-import Pairing.Fr as Fr (Fr, random, frInv, new)
 import Pairing.Pairing (reducedPairing)
-import Pairing.CyclicGroup (AsInteger(..))
 import Pairing.Point (gMul)
-
 import qualified Math.Polynomial as Poly
 import Math.Polynomial.Laurent
+import PrimeField
 
 import Sonic.Utils
 import Sonic.SRS
@@ -19,10 +22,10 @@ type Commitment = G1
 type Opening f = (f, G1)
 
 commitPoly
-  :: (Show f, AsInteger f, Num f, Eq f, Fractional f)
+  :: (KnownNat p)
   => SRS
   -> Integer
-  -> Laurent f
+  -> Laurent (PrimeField p)
   -> Commitment
 commitPoly SRS{..} maxm fX
   = foldl' (<>) mempty (negPowers ++ posPowers)
@@ -41,12 +44,12 @@ commitPoly SRS{..} maxm fX
     posPowers = zipWith expn gPositiveAlphaX posCoeffs
 
 openPoly
-  :: (Show f, AsInteger f, Num f, Eq f, Fractional f)
+  :: (KnownNat p)
   => SRS
   -> Commitment
-  -> f
-  -> Laurent f
-  -> Opening f
+  -> PrimeField p
+  -> Laurent (PrimeField p)
+  -> Opening (PrimeField p)
 openPoly SRS{..} _commitment z fX
   = let fz = evalLaurent fX z
         wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
@@ -62,12 +65,12 @@ openPoly SRS{..} _commitment z fX
     in (fz, w)
 
 pcV
-  :: (AsInteger f, Num f, Eq f, Fractional f)
+  :: (KnownNat p)
   => SRS
   -> Integer
   -> Commitment
-  -> f
-  -> Opening f
+  -> PrimeField p
+  -> Opening (PrimeField p)
   -> Bool
 pcV srs@SRS{..} maxm commitment z (v, w)
   = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1

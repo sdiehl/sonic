@@ -1,7 +1,7 @@
+{-# LANGUAGE TypeApplications #-}
 module Sonic.TestSignature where
 
 import Protolude
-import Pairing.Fr as Fr (Fr(..), new, random)
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
@@ -9,24 +9,25 @@ import Test.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 import Crypto.Number.Generate (generateMax, generateBetween)
 
+import Bulletproofs.Fq
 import Bulletproofs.ArithmeticCircuit
 import Sonic.Constraints
 import Sonic.Signature
-import Sonic.Utils
+import Sonic.Utils as Utils
 import qualified Sonic.SRS as SRS
 
 test_signatures_of_computation :: TestTree
 test_signatures_of_computation
   = localOption (QuickCheckTests 20)
     $ testProperty "Signatures of computation" $ QCM.monadicIO $ do
-        x <- QCM.run Fr.random
-        alpha <- QCM.run Fr.random
+        x <- QCM.run (Utils.random @(PF Fq))
+        alpha <- QCM.run (Utils.random @(PF Fq))
         d <- QCM.run (generateBetween 2 100)
         max <- QCM.run (generateBetween (d `quot` 2) (2*d-1))
 
-        let bL0 = 7
-            bR0 = 3
-            bL1 = 2
+        let bL0 :: Fq = 7
+            bR0 :: Fq = 3
+            bL1 :: Fq = 2
 
         let wL = [[1]
                  ,[0]]
@@ -45,7 +46,7 @@ test_signatures_of_computation
         let srs = SRS.new d x alpha
             m = length wL
 
-        ys <- QCM.run $ replicateM m Fr.random
+        ys <- QCM.run $ replicateM m Utils.random
         proof <- QCM.run $ hscP srs gateWeights ys
 
         QCM.assert $ hscV srs ys gateWeights proof

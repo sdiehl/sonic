@@ -12,7 +12,7 @@ import Sonic.Utils as Utils
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
 sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
   -- Setup for an SRS
-  srs <- SRS.new <$> generateBetween 2 100 <*> pure x <*> Fr.random
+  srs <- SRS.new <$> generateBetween 2 100 <*> pure x <*> Utils.random
   -- Prover
   (proof, y, z, ys) <- prover srs assignment circuit
   -- Verifier
@@ -35,7 +35,7 @@ sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
 runExample :: IO ()
 runExample = do
   -- Arithmetic circuit
-  z <- Fr.random
+  z <- Utils.random
   let cs = [0, -z, -z, -z, -z]
       wV = [[0, 0, 0, 0]
            ,[1, 0, 0, 0]
@@ -51,7 +51,7 @@ runExample = do
       assignment = Assignment aL aR aO
 
   -- Run protocol
-  print =<< sonicProtocol arithCircuit assignment =<< Fr.random
+  print =<< sonicProtocol arithCircuit assignment =<< Utils.random
 
   where
     gateWeights :: GateWeights Fr

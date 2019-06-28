@@ -14,9 +14,6 @@ import Sonic.Utils
 instance (Num a, Eq a, Arbitrary a) => Arbitrary (Laurent a) where
     arbitrary = newLaurent <$> arbitrary <*> arbitrary
 
-instance Arbitrary Fr where
-  arbitrary = Fr.new <$> arbitrary
-
 test_laurentTests :: TestTree
 test_laurentTests
   = testGroup "Laurent polynomials"
