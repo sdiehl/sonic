@@ -6,6 +6,55 @@
 packages:
 - completed:
     cabal-file:
+      size: 3232
+      sha256: ea4d58806c31ac724c5365d6cc9fb8ac8889a042d7c1b98739cb0eff28863fc5
+    name: bulletproofs
+    version: 1.0.0
+    git: https://github.com/adjoint-io/bulletproofs.git
+    pantry-tree:
+      size: 2193
+      sha256: 9cc5f3d698f959975170022c6a55b1bb454dea87d7fd8630f9d5a9c871b68474
+    commit: d06255f3bb5e2509379dd68d312040970b6b026b
+  original:
+    git: https://github.com/adjoint-io/bulletproofs.git
+    commit: d06255f3bb5e2509379dd68d312040970b6b026b
+- completed:
+    hackage: galois-field-0.4.0@sha256:7f8aed0c11f6afc720685c2ede6bdbea3ce8dbd738dacd8fbf722168863d4dd1,3190
+    pantry-tree:
+      size: 1130
+      sha256: e68a2fb1731fc4cdf5f0ae4dd718f8bd2e128eb6285be3d602a209e5430812ba
+  original:
+    hackage: galois-field-0.4.0
+- completed:
+    hackage: poly-0.3.1.0@sha256:3e015e84d304c4197a2cff4a78400ed619eb850922d566028edb6c7254f2095f,1875
+    pantry-tree:
+      size: 1466
+      sha256: ee6b1de208cdd7a621e3138fe3507f4a97d26ce3c47fe20021c1de75d3fddf29
+  original:
+    hackage: poly-0.3.1.0
+- completed:
+    hackage: semirings-0.4.2@sha256:7803a3bd8add49c375da59d456b59e32ea02a88ac1a1d71132420e4c976333f3,3750
+    pantry-tree:
+      size: 555
+      sha256: dcf5c467c4005b567d409c3fe74aa233a6a9313a3693716eeee9ddafbd953f87
+  original:
+    hackage: semirings-0.4.2
+- completed:
+    cabal-file:
+      size: 4398
+      sha256: ac2414a8487931c0858f765d276f9e0fc728842313bfb0ce35739ef93fc6ebc9
+    name: pairing
+    version: 0.4.2
+    git: https://github.com/adjoint-io/pairing.git
+    pantry-tree:
+      size: 1838
+      sha256: 6040038c5812b63c0f8a4bc55f0d7b112aa75c3b82a2cd8b562caa53ac3c70b3
+    commit: e777a1484d368712b569257f360d0ec4bd9ff761
+  original:
+    git: https://github.com/adjoint-io/pairing.git
+    commit: e777a1484d368712b569257f360d0ec4bd9ff761
+- completed:
+    cabal-file:
       size: 2686
       sha256: 46854a72d592df309b2cb87c016576abd94cd779b679d4e3483109f64ba55c1e
     name: polynomial
@@ -18,48 +67,6 @@ packages:
   original:
     git: https://github.com/adjoint-io/polynomial.git
     commit: 7478e09d90f5d256d1afca49eda166a199f54cac
-- completed:
-    cabal-file:
-      size: 3250
-      sha256: 86103fce990972e80550d9f7175b4b40b3d7009df4697d8bf7b9c85fa7af44f4
-    name: bulletproofs
-    version: 0.4.0
-    git: https://github.com/adjoint-io/bulletproofs.git
-    pantry-tree:
-      size: 2194
-      sha256: 9ebf7f37ced85b2fdda0f1d2d9c814279932336142ed797a4ce18dfa82471767
-    commit: 08069fa77ebf76bd5133b5c8a1b607d440acaa13
-  original:
-    git: https://github.com/adjoint-io/bulletproofs.git
-    commit: 08069fa77ebf76bd5133b5c8a1b607d440acaa13
-- completed:
-    cabal-file:
-      size: 2778
-      sha256: 682bb555dccb99b8fba53c21ca6be0ffc85c790439ce959fd064531bc83165ea
-    name: galois-field
-    version: 0.1.0
-    git: git@github.com:adjoint-io/galois-field.git
-    pantry-tree:
-      size: 1046
-      sha256: ba78ea0554f34e7a2fb0a8cc12cdf19f017df0c39774f3e4cd434b36d5ff77a1
-    commit: 30665fdc2af450e2d519c81bca91d85c63057b6d
-  original:
-    git: git@github.com:adjoint-io/galois-field.git
-    commit: 30665fdc2af450e2d519c81bca91d85c63057b6d
-- completed:
-    cabal-file:
-      size: 3999
-      sha256: 397ba643b408042f93c20404e48889584e960d97677cd3415804244df084d94a
-    name: pairing
-    version: 0.3.1
-    git: git@github.com:adjoint-io/pairing.git
-    pantry-tree:
-      size: 1572
-      sha256: a1edefd99172e38a82fb5149f74abf35eaf8e40d77482028dc11a3af7ffc9aba
-    commit: 9d2fa6c59dbd975d6bf1cf762b5d33b58ddbd612
-  original:
-    git: git@github.com:adjoint-io/pairing.git
-    commit: 9d2fa6c59dbd975d6bf1cf762b5d33b58ddbd612
 snapshots:
 - completed:
     size: 498398
