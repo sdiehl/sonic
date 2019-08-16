@@ -1,18 +1,18 @@
 module Main where
 
 import Protolude
-import Crypto.Number.Generate (generateBetween)
+import Control.Monad.Random (getRandomR)
 import Bulletproofs.ArithmeticCircuit
-import Pairing.Fr as Fr
-import Pairing.CyclicGroup
+import GaloisField(GaloisField(rnd))
 import Sonic.SRS as SRS
 import Sonic.Protocol as Protocol
-import Sonic.Utils as Utils
+import Sonic.Utils
+import Sonic.Curve (Fr)
 
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
 sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
   -- Setup for an SRS
-  srs <- SRS.new <$> generateBetween 2 100 <*> pure x <*> Utils.random
+  srs <- SRS.new <$> getRandomR (2, 100) <*> pure x <*> rnd
   -- Prover
   (proof, y, z, ys) <- prover srs assignment circuit
   -- Verifier
@@ -35,7 +35,7 @@ sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
 runExample :: IO ()
 runExample = do
   -- Arithmetic circuit
-  z <- Utils.random
+  z <- rnd
   let cs = [0, -z, -z, -z, -z]
       wV = [[0, 0, 0, 0]
            ,[1, 0, 0, 0]
@@ -51,7 +51,7 @@ runExample = do
       assignment = Assignment aL aR aO
 
   -- Run protocol
-  print =<< sonicProtocol arithCircuit assignment =<< Utils.random
+  print =<< sonicProtocol arithCircuit assignment =<< rnd
 
   where
     gateWeights :: GateWeights Fr

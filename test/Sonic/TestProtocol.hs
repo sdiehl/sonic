@@ -1,19 +1,24 @@
 {-# LANGUAGE TypeApplications #-} 
+{-# LANGUAGE RecordWildCards #-} 
 module Sonic.TestProtocol where
 
 import Protolude
+import Control.Monad.Random (getRandomR)
+import Data.List (zipWith4)
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
 import Test.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
-import Crypto.Number.Generate (generateMax, generateBetween)
 
 import Bulletproofs.ArithmeticCircuit
-import Bulletproofs.Fq
+import GaloisField(GaloisField(rnd))
+
 import Sonic.Protocol
-import Sonic.Utils as Utils
+import Sonic.Utils
+import Sonic.Curve (Fr)
 import qualified Sonic.SRS as SRS
+import Sonic.Reference
 
 --  5 linear constraints (q = 5):
 --  aO[0] = aO[1]
@@ -30,42 +35,20 @@ import qualified Sonic.SRS as SRS
 test_sonic :: TestTree
 test_sonic = localOption (QuickCheckTests 10)
   $ testProperty "Sonic protocol" $ QCM.monadicIO $ do
-    x <- QCM.run (Utils.random @(PF Fq))
-    z <- QCM.run (Utils.random @(PF Fq))
-    alpha <- QCM.run (Utils.random @(PF Fq))
-    d <- QCM.run (generateBetween 2 100)
+    x <- QCM.run rnd
+    z <- QCM.run rnd
+    alpha <- QCM.run rnd
+    d <- QCM.run (getRandomR (2, 100))
+    let acExample = arithCircuitExample3 x z
+        arithCircuit@ArithCircuit{..} = aceCircuit acExample
+        assignment@Assignment{..} = aceAssignment acExample
 
-    let wL = [[0, 0]
-             ,[1, 0]
-             ,[0, 1]
-             ,[0, 0]
-             ,[0, 0]]
-        wR = [[0, 0]
-             ,[0, 0]
-             ,[0, 0]
-             ,[1, 0]
-             ,[0, 1]]
-        wO = [[1, -1]
-             ,[0, 0]
-             ,[0, 0]
-             ,[0, 0]
-             ,[0, 0]]
-        wV = [[0, 0, 0, 0]
-             ,[1, 0, 0, 0]
-             ,[0, 0, 1, 0]
-             ,[0, 1, 0 ,0]
-             ,[0, 0, 0, 1]]
-        cs = [0, -z, -z, -z, -z]
-        aL = [4 - z, 9 - z]
-        aR = [9 - z, 4 - z]
-        aO = aL `hadamardp` aR
-        vs = [4, 9, 9, 4]
-        gateWeights = GateWeights wL wR wO
-        gateInputs = Assignment aL aR aO
-        arithCircuit = ArithCircuit gateWeights wV cs
-
+    traceShowM (
+      zipWith4 (\uq vq wq kq
+                 -> dot aL uq
+                 + dot aR vq
+                 + dot aO wq
+                 - kq) (wL weights) (wR weights) (wO weights) cs)
     let srs = SRS.new d x alpha
-
-    (proof, y, z, ys) <- QCM.run $ prover srs gateInputs arithCircuit
-
+    (proof, y, z, ys) <- QCM.run $ prover srs assignment arithCircuit
     QCM.assert $ verifier srs arithCircuit proof y z ys

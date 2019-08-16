@@ -3,19 +3,18 @@ module Sonic.Protocol where
 
 import Protolude hiding (head)
 import Data.List (head)
-import Crypto.Random (MonadRandom)
-import Crypto.Number.Generate (generateMax)
-import Pairing.Group as Group (G1, G2, GT, g1, g2, expn)
+import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
-import PrimeField
+import GaloisField (GaloisField(rnd))
 
-import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
+-- import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
 import Sonic.SRS
 import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Signature
-import Sonic.Utils as Utils
+import Sonic.Utils
+import Sonic.Curve (Fr, G1, G2, GT)
 
 data Proof f = Proof
   { prR :: G1
@@ -27,17 +26,16 @@ data Proof f = Proof
   , prWt :: G1
   , prS :: f
   , prHscProof :: HscProof f
-  , prt' :: f
   }
 
 prover
-  :: (KnownNat p, MonadRandom m)
+  :: MonadRandom m
   => SRS
-  -> Assignment (PrimeField p)
-  -> ArithCircuit (PrimeField p)
-  -> m (Proof (PrimeField p), PrimeField p, PrimeField p, [PrimeField p])
-prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
-  cns <- replicateM 4 Utils.random
+  -> Assignment Fr
+  -> ArithCircuit Fr
+  -> m (Proof Fr, Fr, Fr, [Fr])
+prover srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
+  cns <- replicateM 4 rnd
   let rXY = rPoly assignment
       sumcXY = newLaurent
                 (negate (2 * n + 4))
@@ -46,7 +44,7 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
       commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
-  y <- Utils.random
+  y <- rnd
   let ky = kPoly cs n
   let sP = sPoly weights
   let tP = tPoly polyR' sP ky
@@ -58,16 +56,16 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
 
   -- traceShowM ("tPolynomial: ", pretty tPY)
 
-  let commitT = commitPoly srs (d srs) tPY
+  let commitT = commitPoly srs srsD tPY
   -- zkV -> zkP: Send y to prover
   -- (Random oracle)
-  z <- Utils.random
+  z <- rnd
   let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
       (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
       (t', wt) = openPoly srs commitT z (evalOnY y tP)
 
   let s = evalLaurent (evalOnY y sP) z
-  ys <- replicateM m Utils.random
+  ys <- replicateM m rnd
   hscProof <- hscP srs weights ys
   pure ( Proof
           { prR = commitR
@@ -91,20 +89,19 @@ prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
     m = length . wL $ weights
 
 verifier
-  :: (KnownNat p)
-  => SRS
-  -> ArithCircuit (PrimeField p)
-  -> Proof (PrimeField p)
-  -> PrimeField p
-  -> PrimeField p
-  -> [PrimeField p]
+  :: SRS
+  -> ArithCircuit Fr
+  -> Proof Fr
+  -> Fr
+  -> Fr
+  -> [Fr]
   -> Bool
 verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
   = let t = (prA * (prB + prS)) + (negate $ evalLaurent ky y)
         checks = [ hscV srs ys weights prHscProof
                  , pcV srs (fromIntegral n) prR z (prA, prWa)
                  , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
-                 , pcV srs d prT z (t, prWt)
+                 , pcV srs srsD prT z (t, prWt)
                 ]
     in and $ traceShow checks checks
   where

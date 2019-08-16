@@ -4,15 +4,16 @@ module Sonic.Signature where
 
 import Protolude
 import Sonic.SRS
-import Crypto.Random (MonadRandom)
-import Pairing.Group
+import Control.Monad.Random (MonadRandom)
+
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
-import PrimeField
+import GaloisField (GaloisField(rnd))
 
 import Sonic.Utils as Utils
 import Sonic.Constraints
 import Sonic.CommitmentScheme
+import Sonic.Curve (Fr, G1)
 
 data HscProof f = HscProof
   { hscS :: [G1]
@@ -26,21 +27,21 @@ data HscProof f = HscProof
 
 -- Helper protocol
 hscP
-  :: (KnownNat p, MonadRandom m)
+  :: (MonadRandom m)
   => SRS
-  -> GateWeights (PrimeField p)
-  -> [PrimeField p]
-  -> m (HscProof (PrimeField p))
+  -> GateWeights Fr
+  -> [Fr]
+  -> m (HscProof Fr)
 hscP srs@SRS{..} weights ys = do
-  let ss = (\yi -> commitPoly srs d (evalOnY yi (sPoly weights))) <$> ys
+  let ss = commitPoly srs srsD . flip evalOnY (sPoly weights) <$> ys
   -- Random oracle
-  u <- Utils.random
+  u <- rnd
   let suX = evalOnX u (sPoly weights)
-      commit = commitPoly srs d suX
+      commit = commitPoly srs srsD suX
       sW = zipWith (\yi si -> openPoly srs si u (evalOnY yi (sPoly weights))) ys ss
       sQ = (\yi -> openPoly srs commit yi suX) <$> ys
   -- Random oracle
-  z <- Utils.random
+  z <- rnd
   let (suz, qz) = openPoly srs commit z suX
   pure HscProof
           { hscS = ss
@@ -55,18 +56,17 @@ hscP srs@SRS{..} weights ys = do
     m = length ys
 
 hscV
-  :: (KnownNat p)
-  => SRS
-  -> [PrimeField p]
-  -> GateWeights (PrimeField p)
-  -> HscProof (PrimeField p)
+  :: SRS
+  -> [Fr]
+  -> GateWeights Fr
+  -> HscProof Fr
   -> Bool
 hscV srs@SRS{..} ys weights proof@HscProof{..}
   = let sz = evalLaurent (evalOnY hscZ (sPoly weights)) hscU
     in and
-        $ pcV srs d hscC hscZ (sz, hscQz)
-        : (zipWith (\sj (wsj, wj) -> pcV srs d sj hscU (wsj, wj)) hscS hscW
-        ++ zipWith (\yj (wsj, wj) -> pcV srs d hscC yj (wsj, wj)) ys hscQ)
+        $ pcV srs srsD hscC hscZ (sz, hscQz)
+        : (zipWith (\sj (wsj, wj) -> pcV srs srsD sj hscU (wsj, wj)) hscS hscW
+        ++ zipWith (\yj (wsj, wj) -> pcV srs srsD hscC yj (wsj, wj)) ys hscQ)
 
 
 

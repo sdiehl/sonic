@@ -4,12 +4,11 @@ packages:
 - .
 
 extra-deps:
-  - git: https://github.com/adjoint-io/bulletproofs.git
-    commit: d06255f3bb5e2509379dd68d312040970b6b026b
+  - bulletproofs-1.0.1
   - galois-field-0.4.0
   - poly-0.3.1.0
   - semirings-0.4.2
-  - git: https://github.com/adjoint-io/pairing.git
-    commit: e777a1484d368712b569257f360d0ec4bd9ff761
+  - pairing-0.5.0
+  - elliptic-curve-0.2.2
   - git: https://github.com/adjoint-io/polynomial.git
     commit: 7478e09d90f5d256d1afca49eda166a199f54cac

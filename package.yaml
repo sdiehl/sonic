@@ -14,12 +14,14 @@ description:         Please see the README on GitHub at <https://github.com/adjo
 dependencies:
 - base
 - galois-field
+- elliptic-curve
 - pairing
 - protolude
 - cryptonite
 - bulletproofs
 - wl-pprint-text
 - polynomial
+- MonadRandom
 
 default-extensions:
   - LambdaCase
@@ -40,6 +42,7 @@ library:
   - Sonic.SRS
   - Sonic.Signature
   - Sonic.Utils
+  - Sonic.Curve
 
 executables:
   sonic-example:

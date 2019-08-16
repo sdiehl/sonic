@@ -1,55 +1,56 @@
 {-# LANGUAGE RecordWildCards #-}
 module Sonic.CommitmentScheme
   ( commitPoly
+  , commitPoly'
   , openPoly
+  , openPoly'
   , pcV
   )
 where
 
 import Protolude
 import Data.List ((!!))
-import Pairing.Group as Group (G1, G2, GT, g1, g2, expn)
 import Pairing.Pairing (reducedPairing)
-import Pairing.Point (gMul)
+
 import qualified Math.Polynomial as Poly
 import Math.Polynomial.Laurent
 import PrimeField
+import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
 
+import Curve (Curve(..))
 import Sonic.Utils
 import Sonic.SRS
+import Sonic.Curve (Fr, G1, gG1, gG2)
 
-type Commitment = G1
 type Opening f = (f, G1)
 
 commitPoly
-  :: (KnownNat p)
-  => SRS
+  :: SRS
   -> Integer
-  -> Laurent (PrimeField p)
-  -> Commitment
+  -> Laurent Fr
+  -> G1
 commitPoly SRS{..} maxm fX
-  = foldl' (<>) mempty (negPowers ++ posPowers)
+  = traceShow ("EXPL: ", expL, "powofx: ", expLaurent powofx, "fX: ", expLaurent fX) $
+    foldl' (<>) mempty (negPowers ++ posPowers)
   where
-    diff = fromInteger (d - maxm)
-    powofx = newLaurent diff [1]
+    diff = fromInteger (srsD - maxm)
+    powofx = Laurent diff [1]
     xfX =  multLaurent powofx fX
     expL = expLaurent xfX
     coeffsL = coeffsLaurent xfX
-    -- The constant term should always be 0
-    (negCoeffs, zeroCoeff, posCoeffs)
+    (negCoeffs, posCoeffs)
       = if expL < 0
-        then (take (abs expL) coeffsL, take 1 $ drop (abs expL) coeffsL, drop (abs expL + 1) coeffsL)
-        else (take 0 coeffsL, take 1 coeffsL, drop 1 coeffsL)
-    negPowers = zipWith expn gNegativeAlphaX (reverse negCoeffs)
-    posPowers = zipWith expn gPositiveAlphaX posCoeffs
+        then (take (abs expL) coeffsL, drop (abs expL) coeffsL)
+        else ([], coeffsL)
+    negPowers = zipWith mul gNegativeAlphaX (reverse negCoeffs)
+    posPowers = zipWith mul gPositiveAlphaX posCoeffs
 
 openPoly
-  :: (KnownNat p)
-  => SRS
-  -> Commitment
-  -> PrimeField p
-  -> Laurent (PrimeField p)
-  -> Opening (PrimeField p)
+  :: SRS
+  -> G1
+  -> Fr
+  -> Laurent Fr
+  -> Opening Fr
 openPoly SRS{..} _commitment z fX
   = let fz = evalLaurent fX z
         wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
@@ -59,27 +60,53 @@ openPoly SRS{..} _commitment z fX
           = if expL < 0
             then splitAt (abs expL) coeffsL
             else splitAt 0 coeffsL
-        negPowers = zipWith expn gNegativeX (reverse negCoeffs)
-        posPowers = zipWith expn gPositiveX posCoeffs
+        negPowers = zipWith mul gNegativeX (reverse negCoeffs)
+        posPowers = zipWith mul gPositiveX posCoeffs
         w = foldl' (<>) mempty (negPowers ++ posPowers)
     in (fz, w)
 
-pcV
-  :: (KnownNat p)
-  => SRS
+commitPoly'
+  :: SRS
   -> Integer
-  -> Commitment
-  -> PrimeField p
-  -> Opening (PrimeField p)
+  -> Fr
+  -> Laurent Fr
+  -> G1
+commitPoly' SRS{..} maxm x poly
+  = gxi `mul` (evalLaurent poly x)
+  where
+    diff = fromInteger (srsD - maxm)
+    gxi = if diff >= 0
+          then gPositiveAlphaX' !! diff
+          else gNegativeAlphaX !! (abs diff - 1)
+
+openPoly'
+  :: SRS
+  -> G1
+  -> Fr
+  -> Fr
+  -> Laurent Fr
+  -> Opening Fr
+openPoly' srs _commitment x z fX
+  = let fz = evalLaurent fX z
+        wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
+        w = gG1 `mul` (evalLaurent wPoly x)
+    in (fz, w)
+
+pcV
+  :: SRS
+  -> Integer
+  -> G1
+  -> Fr
+  -> Opening Fr
   -> Bool
 pcV srs@SRS{..} maxm commitment z (v, w)
   = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
     <>
-    (reducedPairing ((g1 `expn` v) <> (w `expn` (negate z))) (hPositiveAlphaX !! 0)) -- when i = 0
+    (reducedPairing ((gG1 `mul` v) <> (w `mul` (negate z))) (hPositiveAlphaX !! 0)) -- when i = 0
     ==
     (reducedPairing commitment hxi)
   where
-    diff = fromInteger (-d + maxm)
+    diff = fromInteger (-srsD + maxm)
     hxi = if diff >= 0
           then hPositiveX !! diff
           else hNegativeX !! (abs diff - 1)

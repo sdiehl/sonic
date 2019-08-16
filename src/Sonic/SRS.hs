@@ -1,12 +1,14 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Sonic.SRS where
 
 import Protolude
-import Pairing.Group as Group (G1, G2, GT, g1, g2, expn)
-import Pairing.Fr as Fr (Fr(..))
+import Sonic.Curve (Fr, G1, G2, GT, gG1, gG2)
 import Pairing.Pairing (reducedPairing)
-import PrimeField
+import Curve (Curve(..))
+
 data SRS = SRS
-  { d :: Integer
+  { srsD :: Integer
   , gNegativeX :: [G1]
   , gPositiveX :: [G1]
   , hNegativeX :: [G2]
@@ -19,21 +21,23 @@ data SRS = SRS
   , gPositiveAlphaX' :: [G1]
   }
 
-new :: (KnownNat p) => Integer -> PrimeField p -> PrimeField p -> SRS
+new :: Integer -> Fr -> Fr -> SRS
 new d x alpha
   = let xInv = recip x
     in SRS
-        { d = d
-        , gNegativeX = (\i -> expn g1 (xInv ^ i)) <$> [1..d]
-        , gPositiveX = (\i -> expn g1 (x ^ i)) <$> [0..d]
-        , hNegativeX = (\i -> expn g2 (xInv ^ i)) <$> [1..d]
-        , hPositiveX = (\i -> expn g2 (x ^ i)) <$> [0..d]
-        , gNegativeAlphaX = (\i -> expn g1 (alpha * (xInv ^ i))) <$> [1..d]
+        { srsD = d
+        , gNegativeX = (mul gG1 . (^) xInv) <$> [1..d]
+        , gPositiveX = (mul gG1 . (^) x) <$> [0..d]
+        , hNegativeX = (mul gG2 . (^) xInv) <$> [1..d]
+        , hPositiveX = (mul gG2 . (^) x) <$> [0..d]
+        , gNegativeAlphaX = (mul gG1 . ((*) alpha . (^) xInv)) <$> [1..d]
         -- g^alpha is not shared
-        , gPositiveAlphaX = (\i -> expn g1 (alpha * (x ^ i))) <$> [1..d]
-        , hNegativeAlphaX = (\i -> expn g2 (alpha * (xInv ^ i))) <$> [1..d]
-        , hPositiveAlphaX = (\i -> expn g2 (alpha * (x ^ i))) <$> [0..d]
-        , srsPairing = reducedPairing g1 (expn g2 alpha)
-        , gPositiveAlphaX' = (\i -> expn g1 (alpha * (x ^ i))) <$> [0..d]
+        , gPositiveAlphaX = (mul gG1 0) : (mul gG1 . ((*) alpha . (^) x) <$> [1..d])
+        , hNegativeAlphaX = (mul gG2 . ((*) alpha . (^) xInv)) <$> [1..d]
+        , hPositiveAlphaX = (mul gG2 . ((*) alpha . (^) x)) <$> [0..d]
+        , srsPairing = reducedPairing gG1 (mul gG2 alpha)
+
+        -- TODO: Remove this line. It's for testing purposes only
+        , gPositiveAlphaX' = (mul gG1 . ((*) alpha . ((^) x))) <$> [0..d]
         }
 

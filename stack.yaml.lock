@@ -5,19 +5,12 @@
 
 packages:
 - completed:
-    cabal-file:
-      size: 3232
-      sha256: ea4d58806c31ac724c5365d6cc9fb8ac8889a042d7c1b98739cb0eff28863fc5
-    name: bulletproofs
-    version: 1.0.0
-    git: https://github.com/adjoint-io/bulletproofs.git
+    hackage: bulletproofs-1.0.1@sha256:63ff6bbe84c45b8d5d2027c58f7e00ee30b38046a6672b21c721f7288dd8bb0e,3250
     pantry-tree:
-      size: 2193
-      sha256: 9cc5f3d698f959975170022c6a55b1bb454dea87d7fd8630f9d5a9c871b68474
-    commit: d06255f3bb5e2509379dd68d312040970b6b026b
+      size: 1971
+      sha256: 6777039924e7c569a80ab15bd6d5a54d586e839af88bc028ebec80e14633975e
   original:
-    git: https://github.com/adjoint-io/bulletproofs.git
-    commit: d06255f3bb5e2509379dd68d312040970b6b026b
+    hackage: bulletproofs-1.0.1
 - completed:
     hackage: galois-field-0.4.0@sha256:7f8aed0c11f6afc720685c2ede6bdbea3ce8dbd738dacd8fbf722168863d4dd1,3190
     pantry-tree:
@@ -40,19 +33,19 @@ packages:
   original:
     hackage: semirings-0.4.2
 - completed:
-    cabal-file:
-      size: 4398
-      sha256: ac2414a8487931c0858f765d276f9e0fc728842313bfb0ce35739ef93fc6ebc9
-    name: pairing
-    version: 0.4.2
-    git: https://github.com/adjoint-io/pairing.git
+    hackage: pairing-0.5.0@sha256:91bfb2d024a8c2634be59e4fe89d0d760c6bfb29610f9e80406b60428c9d716b,3832
     pantry-tree:
-      size: 1838
-      sha256: 6040038c5812b63c0f8a4bc55f0d7b112aa75c3b82a2cd8b562caa53ac3c70b3
-    commit: e777a1484d368712b569257f360d0ec4bd9ff761
+      size: 1165
+      sha256: 7aa7d03a5e9916cb92905a643e2f36048e25f4792b307ef7075e44f9dd7ce54d
   original:
-    git: https://github.com/adjoint-io/pairing.git
-    commit: e777a1484d368712b569257f360d0ec4bd9ff761
+    hackage: pairing-0.5.0
+- completed:
+    hackage: elliptic-curve-0.2.2@sha256:f77334e9a9e857ddf231bbb7547ebb931d803558a5471614e1d2c6e2e90bc487,11928
+    pantry-tree:
+      size: 9071
+      sha256: 70783c3c93699ce6da7ca3bd0df694942022f71823c89556b87e28fa087cff17
+  original:
+    hackage: elliptic-curve-0.2.2
 - completed:
     cabal-file:
       size: 2686
