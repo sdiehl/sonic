@@ -49,12 +49,6 @@ prover srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
   let sP = sPoly weights
   let tP = tPoly polyR' sP ky
       tPY = evalOnY y tP
-  -- traceShowM ("r: ", rXY)
-  -- traceShowM ("rPolynomial: ", pretty rXY)
-  -- traceShowM ("rPolynomial': ", pretty polyR')
-  -- traceShowM ("sPolynomial: ", pretty sP)
-
-  -- traceShowM ("tPolynomial: ", pretty tPY)
 
   let commitT = commitPoly srs srsD tPY
   -- zkV -> zkP: Send y to prover
@@ -97,13 +91,13 @@ verifier
   -> [Fr]
   -> Bool
 verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
-  = let t = (prA * (prB + prS)) + (negate $ evalLaurent ky y)
+  = let t = prA * (prB + prS) - evalLaurent ky y
         checks = [ hscV srs ys weights prHscProof
                  , pcV srs (fromIntegral n) prR z (prA, prWa)
                  , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
                  , pcV srs srsD prT z (t, prWt)
                 ]
-    in and $ traceShow checks checks
+    in traceShow checks $ and checks
   where
     n = length . head . wL $ weights
     ky = kPoly cs n

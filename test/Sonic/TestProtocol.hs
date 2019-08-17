@@ -39,16 +39,10 @@ test_sonic = localOption (QuickCheckTests 10)
     z <- QCM.run rnd
     alpha <- QCM.run rnd
     d <- QCM.run (getRandomR (2, 100))
-    let acExample = arithCircuitExample3 x z
+    let acExample = arithCircuitExample2 x z
         arithCircuit@ArithCircuit{..} = aceCircuit acExample
         assignment@Assignment{..} = aceAssignment acExample
 
-    traceShowM (
-      zipWith4 (\uq vq wq kq
-                 -> dot aL uq
-                 + dot aR vq
-                 + dot aO wq
-                 - kq) (wL weights) (wR weights) (wO weights) cs)
     let srs = SRS.new d x alpha
     (proof, y, z, ys) <- QCM.run $ prover srs assignment arithCircuit
     QCM.assert $ verifier srs arithCircuit proof y z ys

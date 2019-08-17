@@ -1,9 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module Sonic.CommitmentScheme
   ( commitPoly
-  , commitPoly'
   , openPoly
-  , openPoly'
   , pcV
   )
 where
@@ -11,6 +9,7 @@ where
 import Protolude
 import Data.List ((!!))
 import Pairing.Pairing (reducedPairing)
+import Math.Polynomial
 
 import qualified Math.Polynomial as Poly
 import Math.Polynomial.Laurent
@@ -26,21 +25,20 @@ type Opening f = (f, G1)
 
 commitPoly
   :: SRS
-  -> Integer
+  -> Int
   -> Laurent Fr
   -> G1
 commitPoly SRS{..} maxm fX
-  = traceShow ("EXPL: ", expL, "powofx: ", expLaurent powofx, "fX: ", expLaurent fX) $
-    foldl' (<>) mempty (negPowers ++ posPowers)
+  = foldl' (<>) mempty (negPowers ++ posPowers)
   where
-    diff = fromInteger (srsD - maxm)
-    powofx = Laurent diff [1]
+    diff = srsD - maxm
+    powofx = newLaurent diff [1]
     xfX =  multLaurent powofx fX
     expL = expLaurent xfX
     coeffsL = coeffsLaurent xfX
     (negCoeffs, posCoeffs)
       = if expL < 0
-        then (take (abs expL) coeffsL, drop (abs expL) coeffsL)
+        then splitAt (abs expL) coeffsL
         else ([], coeffsL)
     negPowers = zipWith mul gNegativeAlphaX (reverse negCoeffs)
     posPowers = zipWith mul gPositiveAlphaX posCoeffs
@@ -65,36 +63,9 @@ openPoly SRS{..} _commitment z fX
         w = foldl' (<>) mempty (negPowers ++ posPowers)
     in (fz, w)
 
-commitPoly'
-  :: SRS
-  -> Integer
-  -> Fr
-  -> Laurent Fr
-  -> G1
-commitPoly' SRS{..} maxm x poly
-  = gxi `mul` (evalLaurent poly x)
-  where
-    diff = fromInteger (srsD - maxm)
-    gxi = if diff >= 0
-          then gPositiveAlphaX' !! diff
-          else gNegativeAlphaX !! (abs diff - 1)
-
-openPoly'
-  :: SRS
-  -> G1
-  -> Fr
-  -> Fr
-  -> Laurent Fr
-  -> Opening Fr
-openPoly' srs _commitment x z fX
-  = let fz = evalLaurent fX z
-        wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
-        w = gG1 `mul` (evalLaurent wPoly x)
-    in (fz, w)
-
 pcV
   :: SRS
-  -> Integer
+  -> Int
   -> G1
   -> Fr
   -> Opening Fr
@@ -102,11 +73,11 @@ pcV
 pcV srs@SRS{..} maxm commitment z (v, w)
   = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
     <>
-    (reducedPairing ((gG1 `mul` v) <> (w `mul` (negate z))) (hPositiveAlphaX !! 0)) -- when i = 0
+    reducedPairing ((gG1 `mul` v) <> (w `mul` (negate z))) (hPositiveAlphaX !! 0) -- when i = 0
     ==
     (reducedPairing commitment hxi)
   where
-    diff = fromInteger (-srsD + maxm)
+    diff = -srsD + maxm
     hxi = if diff >= 0
           then hPositiveX !! diff
           else hNegativeX !! (abs diff - 1)

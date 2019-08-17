@@ -8,7 +8,7 @@ import Pairing.Pairing (reducedPairing)
 import Curve (Curve(..))
 
 data SRS = SRS
-  { srsD :: Integer
+  { srsD :: Int
   , gNegativeX :: [G1]
   , gPositiveX :: [G1]
   , hNegativeX :: [G2]
@@ -18,10 +18,9 @@ data SRS = SRS
   , hNegativeAlphaX :: [G2]
   , hPositiveAlphaX :: [G2]
   , srsPairing :: GT
-  , gPositiveAlphaX' :: [G1]
   }
 
-new :: Integer -> Fr -> Fr -> SRS
+new :: Int -> Fr -> Fr -> SRS
 new d x alpha
   = let xInv = recip x
     in SRS
@@ -36,8 +35,5 @@ new d x alpha
         , hNegativeAlphaX = (mul gG2 . ((*) alpha . (^) xInv)) <$> [1..d]
         , hPositiveAlphaX = (mul gG2 . ((*) alpha . (^) x)) <$> [0..d]
         , srsPairing = reducedPairing gG1 (mul gG2 alpha)
-
-        -- TODO: Remove this line. It's for testing purposes only
-        , gPositiveAlphaX' = (mul gG1 . ((*) alpha . ((^) x))) <$> [0..d]
         }
 

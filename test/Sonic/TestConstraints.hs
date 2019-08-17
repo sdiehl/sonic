@@ -3,6 +3,7 @@
 module Sonic.TestConstraints where
 
 import Protolude
+import Data.List ((!!))
 import Test.Tasty
 import Test.Tasty.QuickCheck
 import Test.Tasty.HUnit
@@ -22,73 +23,25 @@ import Sonic.Constraints
 import Sonic.Reference
 import Sonic.Curve (Fr, Fq)
 
-----------------
--- Unit tests --
-----------------
-
-rPolyInput :: Assignment Fr
-rPolyInput = Assignment
-  { aL = [1, 2]
-  , aR = [3, 4]
-  , aO = [5, 6]
-  }
-
-rPolyOutput :: BiVariateLaurent Fr
-rPolyOutput = newLaurent (-4)
-  [ Laurent (-4) [6]
-  , Laurent (-3) [5]
-  , Laurent (-2) [4]
-  , Laurent (-1) [3]
-  , Laurent 0 []
-  , Laurent 1 [1]
-  , Laurent 2 [2]
-  ]
-
-
-unit_rPoly_unit :: Assertion
-unit_rPoly_unit = assertBool "Incorrect rPoly"
-  (rPoly rPolyInput == rPolyOutput)
-
-sPolyInput :: GateWeights Fr
-sPolyInput = GateWeights
-  { wL = [[1, 2], [3, 4]]
-  , wR = [[5, 6], [7, 8]]
-  , wO = [[9, 10], [11, 12]]
-  }
-
-sPolyOutput :: BiVariateLaurent Fr
-sPolyOutput = newLaurent (-2)
-  [ newLaurent 0 [0, 0, 0, 3, 4]
-  , newLaurent 0 [0, 0, 0, 1, 2]
-  , newLaurent 0 []
-  , newLaurent 0 [0, 0, 0, 5, 6]
-  , newLaurent 0 [0, 0, 0, 7, 8]
-  , newLaurent (-1)
-      [ 21888242871839275222246405745257275088548364400416034343698204186575808495616
-      , 0
-      , 21888242871839275222246405745257275088548364400416034343698204186575808495616
-      , 0
-      , 9
-      , 10
-      ]
-  , newLaurent (-2)
-      [ 21888242871839275222246405745257275088548364400416034343698204186575808495616
-      , 0
-      , 0
-      , 0
-      , 21888242871839275222246405745257275088548364400416034343698204186575808495616
-      , 11
-      , 12
-      ]
-  ]
-
-unit_sPoly_unit :: Assertion
-unit_sPoly_unit = assertBool "Incorrect sPoly"
-  (sPoly sPolyInput == sPolyOutput)
-
---------------------
--- Property tests --
---------------------
+-- a·uq + b·vq + c·wq = kq
+prop_linear_constraints :: Property
+prop_linear_constraints = QCM.monadicIO $ do
+  x <- QCM.run rnd
+  z <- QCM.run rnd
+  acExample@ACExample{..} <- QCM.run . generate $ oneof
+    [ pure $ arithCircuitExample1 x z
+    , pure $ arithCircuitExample2 x z
+    ]
+  let Assignment{..} = aceAssignment
+      ArithCircuit{..} = aceCircuit
+      GateWeights{..} = weights
+      n = case head wL of
+            Nothing -> panic "Empty weights"
+            Just xs -> length xs
+      kY = coeffsLaurent $ kPoly cs n
+      assertions = zipWith
+        (\i csq -> aL `dot` (wL !! i) + aR `dot` (wR !! i) + aO `dot` (wO !! i) == csq) [0..] cs
+  pure $ and assertions === True
 
 -- | r(X, Y) = r(XY, 1)
 prop_rPoly_prop :: Fr -> Fr -> Property
@@ -97,19 +50,49 @@ prop_rPoly_prop x y = QCM.monadicIO $ do
   let rP = rPoly assignment
   pure $ evalLaurent (evalOnY y rP) x === evalLaurent (evalOnY 1 rP) (x * y)
 
--- | Constant term in polynomial R[x] is zero
+-- | Constant term in polynomial r[X, Y] is zero
 prop_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_rPoly_zero_constant x y = QCM.monadicIO $ do
   aL <- QCM.run $ replicateM 10 rnd
   aR <- QCM.run $ replicateM 10 rnd
   let aO = aL `hadamardp` aR
-      rP = rPoly @Fr (Assignment aL aR aO)
-      constantElemX = take 1 $ drop (abs (expLaurent rP)) $ coeffsLaurent rP
-  pure $ case constantElemX of
-    [] -> True === True
-    [constantElemXL] ->
-      let constantElemY = take 1 $ drop (abs (expLaurent rP)) $ coeffsLaurent constantElemXL
-      in (True === null constantElemY)
+      rXY = rPoly @Fr (Assignment aL aR aO)
+  r <- QCM.run rnd
+  pure $ case flip evalLaurent r <$> getZeroCoeff rXY of
+           Nothing -> panic "Zero coeff does not exist"
+           Just z -> z === 0
+
+-- | Constant term in polynomial s[X, Y] is zero
+prop_sPoly_zero_constant :: Fr -> Fr -> Property
+prop_sPoly_zero_constant x y = QCM.monadicIO $ do
+  x <- QCM.run rnd
+  z <- QCM.run rnd
+  acExample@ACExample{..} <- QCM.run . generate $ oneof
+    [ pure $ arithCircuitExample1 x z
+    , pure $ arithCircuitExample2 x z
+    ]
+  let sXY = sPoly $ weights aceCircuit
+  r <- QCM.run rnd
+  pure $ case flip evalLaurent r <$> getZeroCoeff sXY of
+           Nothing -> panic "Zero coeff does not exist"
+           Just z -> z === 0
+
+-- | Constant term in polynomial s[X, Y] is zero
+prop_sPoly_plus_rPoly_zero_constant :: Fr -> Fr -> Property
+prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
+  x <- QCM.run rnd
+  z <- QCM.run rnd
+  acExample@ACExample{..} <- QCM.run . generate $ oneof
+    [ pure $ arithCircuitExample1 x z
+    , pure $ arithCircuitExample2 x z
+    ]
+  let rXY = rPoly aceAssignment
+      sXY = sPoly $ weights aceCircuit
+      rXY' = rXY `addLaurent` sXY
+  r <- QCM.run rnd
+  pure $ case flip evalLaurent r <$> getZeroCoeff rXY' of
+           Nothing -> panic "Zero coeff does not exist"
+           Just z -> z === 0
 
 -- | Constant term of t(X, Y) is zero, thus
 -- demonstrating that the constraint system is satisfied
@@ -117,12 +100,15 @@ prop_tPoly_zero_constant :: Property
 prop_tPoly_zero_constant = QCM.monadicIO $ do
   x <- QCM.run rnd
   z <- QCM.run rnd
-  let acExample@ACExample{..} = arithCircuitExample3 x z
-  zeroCoeff <- QCM.run $ findZeroCoeff aceCircuit aceAssignment
+  acExample@ACExample{..} <- QCM.run . generate $ oneof
+    [ pure $ arithCircuitExample1 x z
+    , pure $ arithCircuitExample2 x z
+    ]
+  zeroCoeff <- QCM.run $ findTPolyZeroCoeff aceCircuit aceAssignment
   pure $ zeroCoeff === 0
   where
-    findZeroCoeff :: MonadRandom m => ArithCircuit Fr -> Assignment Fr -> m Fr
-    findZeroCoeff circuit@ArithCircuit{..} assignment = do
+    findTPolyZeroCoeff :: MonadRandom m => ArithCircuit Fr -> Assignment Fr -> m Fr
+    findTPolyZeroCoeff circuit@ArithCircuit{..} assignment = do
       let n = case head (wL weights) of
                 Nothing -> panic "Empty weights"
                 Just xs -> length xs
@@ -131,7 +117,8 @@ prop_tPoly_zero_constant = QCM.monadicIO $ do
           kY = kPoly cs n
           tP = tPoly rXY sXY kY
 
-      case getZeroCoeff tP >>= getZeroCoeff of
+      r <- rnd
+      case flip evalLaurent r <$> getZeroCoeff tP of
         Nothing -> panic "Zero coeff does not exist"
         Just z -> pure z
 

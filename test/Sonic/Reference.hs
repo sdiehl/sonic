@@ -4,6 +4,7 @@ import Protolude
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
 import Sonic.Utils
+import Sonic.Curve (Fr)
 
 data Coeffs f = Coeffs
   { negCoeffs :: [f]
@@ -35,7 +36,7 @@ data ACExample f = ACExample
   , aceCircuit :: ArithCircuit f
   }
 
-arithCircuitExample1 :: Num f => f -> f -> ACExample f
+arithCircuitExample1 :: Fr -> Fr -> ACExample Fr
 arithCircuitExample1 x z =
   let wL = [[1], [0]]
       wR = [[0], [1]]
@@ -49,7 +50,7 @@ arithCircuitExample1 x z =
       arithCircuit = ArithCircuit gateWeights [] cs
   in ACExample assignment arithCircuit
 
-arithCircuitExample2 :: Num f => f -> f -> ACExample f
+arithCircuitExample2 :: Fr -> Fr -> ACExample Fr
 arithCircuitExample2 x z =
   let wL = [[0, 0]
            ,[1, 0]
@@ -67,35 +68,6 @@ arithCircuitExample2 x z =
            ,[0, 0]
            ,[0, 0]]
 
-      cs = [0, 4-z, 9-z, 9-z, 4-z]
-      aL = [4 - z, 9 - z]
-      aR = [9 - z, 4 - z]
-      aO = aL `hadamardp` aR
-      vs = [4, 9, 9, 4]
-      gateWeights = GateWeights wL wR wO
-      assignment = Assignment aL aR aO
-      circuit = ArithCircuit gateWeights witness cs
-  in ACExample assignment circuit
-
-
-arithCircuitExample3 :: Num f => f -> f -> ACExample f
-arithCircuitExample3 x z =
-  let wL = [[0, 0]
-           ,[1, 0]
-           ,[0, 1]
-           ,[0, 0]
-           ,[0, 0]]
-      wR = [[0, 0]
-           ,[0, 0]
-           ,[0, 0]
-           ,[1, 0]
-           ,[0, 1]]
-      wO = [[1, -1]
-           ,[0, 0]
-           ,[0, 0]
-           ,[0, 0]
-           ,[0, 0]]
-      wV = witness
       cs = [0, 4-z, 9-z, 9-z, 4-z]
       aL = [4 - z, 9 - z]
       aR = [9 - z, 4 - z]

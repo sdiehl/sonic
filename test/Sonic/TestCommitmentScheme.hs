@@ -10,9 +10,8 @@ import Test.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 import Control.Monad.Random (getRandomR)
 import GaloisField(GaloisField(rnd))
-
-import Text.PrettyPrint.Leijen.Text as PP
-
+import Control.Monad.Random (MonadRandom, getRandomR)
+import Math.Polynomial.Laurent
 import Bulletproofs.ArithmeticCircuit
 import Sonic.Constraints
 import Sonic.CommitmentScheme
@@ -41,22 +40,44 @@ test_poly_commit_scheme
       y <- QCM.run rnd
       z <- QCM.run rnd
       alpha <- QCM.run rnd
-      d <- QCM.run (getRandomR (5, 100))
-      max <- QCM.run (getRandomR ((d `quot` 2), d))
-      let acExample = arithCircuitExample1 x z
-          ArithCircuit{..} = aceCircuit acExample
+
+      let acExample = arithCircuitExample2 x z
+          acircuit@ArithCircuit{..} = aceCircuit acExample
           assignment = aceAssignment acExample
+          n = length . aL $ assignment
+
+      d <- QCM.run (getRandomR (3 * n + 1, 20 * n))
+
+      -- "...in our polynomial constraint system 3n < d
+      -- (otherwisewe cannot commit to t(X,Y)),
+      -- thus r(X,Y) has no (−d + n) term."
+      max <- QCM.run . generate $ oneof
+        [ pure d
+        , arbitrary `suchThat` (\i -> i > 0 && 3 * i < d)
+        ]
+      zeroCoeff <- QCM.run $ findZeroCoeff acircuit assignment
+
+      QCM.assert $ zeroCoeff == 0
 
       let srs = SRS.new d x alpha
-          n = length . aL $ assignment
           fX = evalOnY y $ tPoly (rPoly assignment) (sPoly weights) (kPoly cs n)
           commitment = commitPoly srs max fX
-          commitment' = commitPoly' srs max x fX
-      traceShowM (d, max, "difference", d - max)
-      traceShowM ("commitment equal: ", commitment == commitment')
-      let opening = openPoly srs commitment z fX
-          opening' = openPoly' srs commitment' x z fX
-      traceShowM ("opening equal: ", opening == opening')
+          opening = openPoly srs commitment z fX
 
       QCM.assert $ pcV srs max commitment z opening
+  where
+    findZeroCoeff :: MonadRandom m => ArithCircuit Fr -> Assignment Fr -> m Fr
+    findZeroCoeff circuit@ArithCircuit{..} assignment = do
+      let n = case head (wL weights) of
+                Nothing -> panic "Empty weights"
+                Just xs -> length xs
+      let rXY = rPoly assignment
+          sXY = sPoly weights
+          kY = kPoly cs n
+          tP = tPoly rXY sXY kY
+
+      r <- rnd
+      case flip evalLaurent r <$> getZeroCoeff tP of
+        Nothing -> panic "Zero coeff does not exist"
+        Just z -> pure z
 

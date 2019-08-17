@@ -27,12 +27,14 @@ test_signatures_of_computation
         z <- QCM.run rnd
         alpha <- QCM.run rnd
         d <- QCM.run (getRandomR (2, 100))
-        let acExample = arithCircuitExample3 x z
-            arithCircuit@ArithCircuit{..} = aceCircuit acExample
+        acExample <- QCM.run . generate $ oneof
+          [ pure $ arithCircuitExample1 x z
+          , pure $ arithCircuitExample2 x z
+          ]
+        let arithCircuit@ArithCircuit{..} = aceCircuit acExample
             assignment@Assignment{..} = aceAssignment acExample
         let srs = SRS.new d x alpha
             m = length $ wL weights
-
         ys <- QCM.run $ replicateM m rnd
         proof <- QCM.run $ hscP srs weights ys
         QCM.assert $ hscV srs ys weights proof
