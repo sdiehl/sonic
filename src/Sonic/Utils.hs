@@ -32,7 +32,7 @@ dot xs ys = sum $ hadamardp xs ys
 
 evalOnY :: Fr -> BiVariateLaurent Fr -> Laurent Fr
 evalOnY y l
-  = Laurent (expLaurent l) ((\l' -> evalLaurent l' y) <$> (coeffsLaurent l))
+  = newLaurent (expLaurent l) ((\l' -> evalLaurent l' y) <$> (coeffsLaurent l))
 
 evalOnX :: Fr -> BiVariateLaurent Fr -> Laurent Fr
 evalOnX x l

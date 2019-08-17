@@ -16,6 +16,7 @@ import GaloisField(GaloisField(rnd))
 
 import Sonic.Protocol
 import Sonic.Utils
+import Sonic.SRS
 import Sonic.Curve (Fr)
 import qualified Sonic.SRS as SRS
 import Sonic.Reference
@@ -38,11 +39,12 @@ test_sonic = localOption (QuickCheckTests 10)
     x <- QCM.run rnd
     z <- QCM.run rnd
     alpha <- QCM.run rnd
-    d <- QCM.run (getRandomR (2, 100))
+
     let acExample = arithCircuitExample2 x z
         arithCircuit@ArithCircuit{..} = aceCircuit acExample
         assignment@Assignment{..} = aceAssignment acExample
-
+        n = length aL
+    d <- QCM.run (getRandomR (4 * n, 20 * n))
     let srs = SRS.new d x alpha
     (proof, y, z, ys) <- QCM.run $ prover srs assignment arithCircuit
     QCM.assert $ verifier srs arithCircuit proof y z ys
