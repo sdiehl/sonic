@@ -1,21 +1,25 @@
+-- The interactive Sonic protocol to check that the prover knows a valid assignment of the wires in the circuit
+
 {-# LANGUAGE RecordWildCards #-}
-module Sonic.Protocol where
+module Sonic.Protocol
+  ( Proof
+  , prove
+  , verify
+  ) where
 
 import Protolude hiding (head)
 import Data.List (head)
-import Crypto.Random (MonadRandom)
-import Crypto.Number.Generate (generateMax)
-import Pairing.Group as Group (G1, G2, GT, g1, g2, expn)
-import Pairing.CyclicGroup (AsInteger(..))
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial.Laurent
+import Control.Monad.Random (MonadRandom)
+import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
+import Math.Polynomial.Laurent (newLaurent, evalLaurent)
+import GaloisField (GaloisField(rnd))
 
-import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
-import Sonic.SRS
-import Sonic.Constraints
-import Sonic.CommitmentScheme
-import Sonic.Signature
-import Sonic.Utils as Utils
+import Sonic.SRS (SRS(..))
+import Sonic.Constraints (rPoly, sPoly, tPoly, kPoly)
+import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
+import Sonic.Signature (HscProof(..), hscP, hscV)
+import Sonic.Utils (evalOnY)
+import Sonic.Curve (Fr, G1)
 
 data Proof f = Proof
   { prR :: G1
@@ -27,80 +31,81 @@ data Proof f = Proof
   , prWt :: G1
   , prS :: f
   , prHscProof :: HscProof f
-  , prt' :: f
   }
 
-prover
-  :: (Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
+prove
+  :: MonadRandom m
   => SRS
-  -> Assignment f
-  -> ArithCircuit f
-  -> f
-  -> m (Proof f, f, f, [f])
-prover srs assignment@Assignment{..} arithCircuit@ArithCircuit{..} x = do
-  cns <- replicateM 4 Utils.random
-  let rXY = rPoly assignment
-      sumcXY = newLaurent
-                (negate (2 * n + 4))
-                (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
-      polyR' = addLaurent rXY sumcXY
-      commitR = commitPoly srs (fromIntegral n) x (evalOnY 1 polyR')
-  -- zkV -> zkP: Send y to prover
-  -- (Random oracle)
-  y <- Utils.random
-  let ky = polyK cs n
-  let sP = sPoly weights
-  let tP = tPoly polyR' sP ky
-  let commitT = commitPoly srs (d srs) x (evalOnY y tP)
-  -- zkV -> zkP: Send y to prover
-  -- (Random oracle)
-  z <- Utils.random
-  let (a, wa) = openPoly srs commitR x z (evalOnY 1 polyR')
-      (b, wb) = openPoly srs commitR x (y * z) (evalOnY 1 polyR')
-      (t', wt) = openPoly srs commitT x z (evalOnY y tP)
+  -> Assignment Fr
+  -> ArithCircuit Fr
+  -> m (Proof Fr, Fr, Fr, [Fr])
+prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
+  if srsD < 7*n
+    then panic $ "Parameter d is not large enough: " <> show srsD <> " should be greater than " <>  show (7*n)
+    else do
+    cns <- replicateM 4 rnd
+    let rXY = rPoly assignment
+        sumcXY = newLaurent
+                 (negate (2 * n + 4))
+                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
+        polyR' = rXY + sumcXY
+        commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
 
-  let s = evalLaurent (evalOnY y sP) z
-  ys <- replicateM m Utils.random
-  hscProof <- hscP srs weights x ys
+    -- zkV -> zkP: Send y to prover (Random oracle)
+    y <- rnd
+    let ky = kPoly cs n
+    let sP = sPoly weights
+    let tP = tPoly polyR' sP ky
+        tPY = evalOnY y tP
 
-  pure ( Proof
-          { prR = commitR
-          , prT = commitT
-          , prA = a
-          , prWa = wa
-          , prB = b
-          , prWb = wb
-          , prWt = wt
-          , prS = s
-          , prHscProof = hscProof
-          }
-       , y
-       , z
-       , ys
-       )
+    let commitT = commitPoly srs srsD tPY
+
+    -- zkV -> zkP: Send y to prover (Random oracle)
+    z <- rnd
+    let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
+        (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
+        (_, wt) = openPoly srs commitT z (evalOnY y tP)
+
+    let s = evalLaurent (evalOnY y sP) z
+    ys <- replicateM m rnd
+    hscProof <- hscP srs weights ys
+    pure ( Proof
+           { prR = commitR
+           , prT = commitT
+           , prA = a
+           , prWa = wa
+           , prB = b
+           , prWb = wb
+           , prWt = wt
+           , prS = s
+           , prHscProof = hscProof
+           }
+         , y
+         , z
+         , ys
+         )
   where
     n :: Int
     n = length aL
     m :: Int
     m = length . wL $ weights
 
-verifier
-  :: (Num f, Eq f, Fractional f, AsInteger f)
-  => SRS
-  -> ArithCircuit f
-  -> Proof f
-  -> f
-  -> f
-  -> [f]
+verify
+  :: SRS
+  -> ArithCircuit Fr
+  -> Proof Fr
+  -> Fr
+  -> Fr
+  -> [Fr]
   -> Bool
-verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
-  = let t = (prA * (prB + prS)) + (negate $ evalLaurent ky y)
+verify srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
+  = let t = prA * (prB + prS) - evalLaurent ky y
         checks = [ hscV srs ys weights prHscProof
-                , pcV srs (fromIntegral n) prR z (prA, prWa)
-                , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
-                , pcV srs d prT z (t, prWt)
+                 , pcV srs (fromIntegral n) prR z (prA, prWa)
+                 , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
+                 , pcV srs srsD prT z (t, prWt)
                 ]
     in and checks
   where
     n = length . head . wL $ weights
-    ky = polyK cs n
+    ky = kPoly cs n

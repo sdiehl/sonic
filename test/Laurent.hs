@@ -1,21 +1,16 @@
 {-# LANGUAGE TypeApplications, ScopedTypeVariables #-}
-module Sonic.TestLaurent where
+module Laurent where
 
 import Protolude
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import Test.Tasty.HUnit
-import Pairing.Fr as Fr
-import Text.PrettyPrint.Leijen.Text (pretty)
-
 import Math.Polynomial.Laurent
+
+import Sonic.Curve (Fr)
 import Sonic.Utils
 
 instance (Num a, Eq a, Arbitrary a) => Arbitrary (Laurent a) where
     arbitrary = newLaurent <$> arbitrary <*> arbitrary
-
-instance Arbitrary Fr where
-  arbitrary = Fr.new <$> arbitrary
 
 test_laurentTests :: TestTree
 test_laurentTests

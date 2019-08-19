@@ -1,17 +1,23 @@
+-- The helper protocol for computing aggregated signatures of correct computation.
+
 {-# LANGUAGE RecordWildCards #-}
--- Signature of correct computation
-module Sonic.Signature where
+module Sonic.Signature
+  ( HscProof(..)
+  , hscP
+  , hscV
+  ) where
 
 import Protolude
-import Sonic.SRS
-import Crypto.Random (MonadRandom)
-import Pairing.CyclicGroup (AsInteger(..))
-import Pairing.Group
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial.Laurent
-import Sonic.Utils as Utils
-import Sonic.Constraints
-import Sonic.CommitmentScheme
+import Control.Monad.Random (MonadRandom)
+import Bulletproofs.ArithmeticCircuit (GateWeights(..))
+import Math.Polynomial.Laurent (evalLaurent)
+import GaloisField (GaloisField(rnd))
+
+import Sonic.Utils (evalOnX, evalOnY)
+import Sonic.Constraints (sPoly)
+import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
+import Sonic.SRS (SRS(..))
+import Sonic.Curve (Fr, G1)
 
 data HscProof f = HscProof
   { hscS :: [G1]
@@ -23,26 +29,23 @@ data HscProof f = HscProof
   , hscZ :: f
   }
 
--- Helper protocol
 hscP
-  :: (Num f, Eq f, Fractional f, AsInteger f, MonadRandom m)
+  :: (MonadRandom m)
   => SRS
-  -> GateWeights f
-  -> f
-  -> [f]
-  -> m (HscProof f)
-hscP srs@SRS{..} weights x ys = do
-  let ss = (\yi -> commitPoly srs d x (evalOnY yi (sPoly weights))) <$> ys
+  -> GateWeights Fr
+  -> [Fr]
+  -> m (HscProof Fr)
+hscP srs@SRS{..} weights ys = do
+  let ss = commitPoly srs srsD . flip evalOnY (sPoly weights) <$> ys
   -- Random oracle
-  u <- Utils.random
+  u <- rnd
   let suX = evalOnX u (sPoly weights)
-      commit = commitPoly srs d x suX
-      -- <> (g1 `expn` (evalLaurent x suX))
-      sW = zipWith (\yi si -> openPoly srs si x u (evalOnY yi (sPoly weights))) ys ss
-      sQ = (\yi -> openPoly srs commit x yi suX) <$> ys
+      commit = commitPoly srs srsD suX
+      sW = zipWith (\yi si -> openPoly srs si u (evalOnY yi (sPoly weights))) ys ss
+      sQ = (\yi -> openPoly srs commit yi suX) <$> ys
   -- Random oracle
-  z <- Utils.random
-  let (suz, qz) = openPoly srs commit x z suX
+  z <- rnd
+  let (_suz, qz) = openPoly srs commit z suX
   pure HscProof
           { hscS = ss
           , hscW = sW
@@ -52,23 +55,16 @@ hscP srs@SRS{..} weights x ys = do
           , hscU = u
           , hscZ = z
           }
-  where
-    m = length ys
 
 hscV
-  :: (Num f, Eq f, Fractional f, AsInteger f)
-  => SRS
-  -> [f]
-  -> GateWeights f
-  -> HscProof f
+  :: SRS
+  -> [Fr]
+  -> GateWeights Fr
+  -> HscProof Fr
   -> Bool
 hscV srs@SRS{..} ys weights proof@HscProof{..}
   = let sz = evalLaurent (evalOnY hscZ (sPoly weights)) hscU
     in and
-        $ pcV srs d hscC hscZ (sz, hscQz)
-        : (zipWith (\sj (wsj, wj) -> pcV srs d sj hscU (wsj, wj)) hscS hscW
-        ++ zipWith (\yj (wsj, wj) -> pcV srs d hscC yj (wsj, wj)) ys hscQ)
-
-
-
-
+        $ pcV srs srsD hscC hscZ (sz, hscQz)
+        : (zipWith (flip (pcV srs srsD) hscU) hscS hscW
+        ++ zipWith (pcV srs srsD hscC) ys hscQ)

@@ -1,68 +1,71 @@
-{-# LANGUAGE RecordWildCards, FlexibleInstances, RankNTypes #-}
-module Sonic.Constraints where
+-- Constraint system proposed by Bootle et al.
+
+{-# LANGUAGE RecordWildCards #-}
+module Sonic.Constraints
+  ( rPoly
+  , sPoly
+  , tPoly
+  , kPoly
+  ) where
 
 import Protolude hiding (head)
-import Data.List (zipWith4, head)
-import Pairing.CyclicGroup (CyclicGroup(..))
-import Pairing.Fr as Fr (Fr, new)
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial (poly, Endianness(..))
+import Data.List (zipWith4, head, (!!))
+import Bulletproofs.ArithmeticCircuit (Assignment(..), GateWeights(..))
 import Math.Polynomial.Laurent
-import Sonic.Utils
+  (Laurent(..), newLaurent, zeroLaurent, expLaurent)
 
-compressMulConstraints :: Assignment Fr -> Fr -> Fr
-compressMulConstraints Assignment{..} y = sum $ zipWith4 f aL aR aO [1..]
-  where
-    f ai bi ci i = (ai * bi - ci) * ((y ^ i) + y ^ (-i))
+import Sonic.Curve (Fr)
+import Sonic.Utils (BiVariateLaurent, convertToTwoVariateX, convertToTwoVariateY, evalOnY)
 
 rPoly
   :: (Eq f, Num f)
   => Assignment f
-  -> Laurent (Laurent f)
+  -> BiVariateLaurent f
 rPoly Assignment{..} =
-  newLaurent (negate (2 * n)) (reorder $ newLaurent 0 [] : (concat $ zipWith4 f aL aR aO [1..]))
+  newLaurent
+    (negate (2 * n))
+    (reorder $ newLaurent 0 [] : concat (zipWith4 f aL aR aO [1..]))
   where
-    f ai bi ci i = [newLaurent i [ai], newLaurent (-i) [bi], newLaurent (-i - n) [ci]]
+    f ai bi ci i = [Laurent i [ai], Laurent (-i) [bi], Laurent (-i - n) [ci]]
     reorder = sortBy (\l1 l2 -> compare (expLaurent l1) (expLaurent l2))
     n = length aL
 
 sPoly
-  :: (Eq f, Num f)
+  :: forall f. (Eq f, Num f)
   => GateWeights f
-  -> Laurent (Laurent f)
+  -> BiVariateLaurent f
 sPoly GateWeights{..}
-  = addLaurent
-      (addLaurent
-        (newLaurent (negate n) (zipWith f (reverse wL) [1..]))
-        (newLaurent 1 (zipWith f wR [1..]))
-      )
-      (newLaurent (n+1) (zipWith g wO [1..]))
+  = foldl'
+    (\acc i -> acc
+      + newLaurent (-i) [uiY i]
+      + newLaurent i [viY i]
+      + newLaurent (i + n) [wiY i]
+    ) zeroLaurent [1..n]
   where
-    f wi i = newLaurent (n+1) wi
-    g wi i = addLaurent
-      (addLaurent (newLaurent i [-1]) (newLaurent (-i) [-1]))
-      (newLaurent (n+1) wi)
+    uiY, viY, wiY :: Int -> Laurent f
+    uiY i = xiY i wL
+    viY i = xiY i wR
+    wiY i = newLaurent (-i) [-1] + newLaurent i [-1] + xiY i wO
+
+    xiY :: Int -> [[f]] -> Laurent f
+    xiY i xL =  foldl' (fxqi i) zeroLaurent (zip [1..] xL)
+    fxqi i acc (q, xLq) = acc + newLaurent (q + n) [xLq !! (i - 1)]
+
+    -- n: multiplication constraints
     n = length $ head wL
-    -- ^ size(wL) = Q x n
 
 tPoly
-  :: (Eq f, Num f, Fractional f)
-  => Laurent (Laurent f)
-  -> Laurent (Laurent f)
-  -> Laurent f
-  -> Laurent (Laurent f)
-tPoly rP sP kP
+  :: BiVariateLaurent Fr
+  -> BiVariateLaurent Fr
+  -> Laurent Fr
+  -> BiVariateLaurent Fr
+tPoly rXY sXY kY
   -- r(X, 1) * (r(X,Y) + s(X, Y)) - k(Y)
-  = addLaurent
-      (multLaurent
-        (convertToTwoVariateX $ evalOnY 1 rP)
-        (addLaurent rP sP)
-      )
-     (convertToTwoVariateY $ negate kP)
+  = (rX1 * rXY') + k1Y
+  where
+    rXY' = rXY + sXY
+    rX1 = convertToTwoVariateX $ evalOnY 1 rXY
+    k1Y = convertToTwoVariateY $ negate kY
 
-polyK
-  :: (Eq f, Num f)
-  => [f]
-  -> Int
-  -> Laurent f
-polyK k n = newLaurent (n+1) k
+kPoly :: [Fr] -> Int -> Laurent Fr
+kPoly k n = newLaurent (n+1) k
