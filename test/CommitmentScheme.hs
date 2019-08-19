@@ -1,16 +1,13 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
-module Sonic.TestCommitmentScheme where
+module CommitmentScheme where
 
 import Protolude
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import Test.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
-import Control.Monad.Random (getRandomR)
+import Control.Monad.Random (MonadRandom)
 import GaloisField(GaloisField(rnd))
-import Control.Monad.Random (MonadRandom, getRandomR)
 import Math.Polynomial.Laurent
 import Bulletproofs.ArithmeticCircuit
 import Sonic.Constraints
@@ -18,21 +15,11 @@ import Sonic.CommitmentScheme
 import Sonic.Utils
 import qualified Sonic.SRS as SRS
 import Sonic.Curve  (Fr)
-import Sonic.Reference
+import Reference
 
--- Example of arithmetic circuit
---
--- bL0     bR0    bL1      10
---  |       |      |       |
---  |--[+]--|      |--[+]--|
---      |              |
---      | bO0      bO1 |
---      |  =        =  |
---      |  aL      aR  |
---      |-----[x]------|
---             |
---             | aO
---             |
+-- T ← Commit(bp,srs,d,t(X,y))
+-- (t=t(z,y),Wt) ← Open(T,z,t(X,y)))
+-- check pcV(bp,srs,d,T,z,(t,Wt))
 test_tXy_commit_scheme :: TestTree
 test_tXy_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "tXy commitment scheme" $ QCM.monadicIO $ do
@@ -68,11 +55,14 @@ test_tXy_commit_scheme = localOption (QuickCheckTests 50) $
         Nothing -> panic "Zero coeff does not exist"
         Just z -> pure z
 
+-- R ← Commit(bp,srs,n,r(X,1))
+-- (a=r(z,1),Wa) ← Open(R,z,r(X,1))
+-- check pcV(bp,srs,n,R,z,(a,Wa))
 test_rX1_commit_scheme :: TestTree
 test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "rX1 commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
-      let (acircuit@ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
+      let (ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
           n = length . aL $ assignment
       d <- lift $ randomD n
 
@@ -88,12 +78,15 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
 
       QCM.assert $ pcV srs n commitment pZ opening
 
+-- R ← Commit(bp,srs,n,r(X,1))
+-- (a=r(z,1),Wa) ← Open(R,yz,r(X,1))
+-- check pcV(bp,srs,n,R,yz,(a,Wa))
 test_rX1YZ_commit_scheme :: TestTree
 test_rX1YZ_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "rX1YZ commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
 
-      let (acircuit@ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
+      let (ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
           n = length . aL $ assignment
 
       d <- lift $ randomD n

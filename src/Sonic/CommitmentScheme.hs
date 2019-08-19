@@ -1,3 +1,5 @@
+-- Polynomial commitment scheme inspired by Kate et al.
+
 {-# LANGUAGE RecordWildCards #-}
 module Sonic.CommitmentScheme
   ( commitPoly
@@ -9,17 +11,12 @@ where
 import Protolude
 import Data.List ((!!))
 import Pairing.Pairing (reducedPairing)
-import Math.Polynomial
 
-import qualified Math.Polynomial as Poly
 import Math.Polynomial.Laurent
-import PrimeField
-import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
 
 import Curve (Curve(..))
-import Sonic.Utils
 import Sonic.SRS
-import Sonic.Curve (Fr, G1, gG1, gG2)
+import Sonic.Curve (Fr, G1, gG1)
 
 type Opening f = (f, G1)
 
@@ -31,8 +28,8 @@ commitPoly
 commitPoly SRS{..} maxm fX
   = foldl' (<>) mempty (negPowers ++ posPowers)
   where
-    diff = srsD - maxm
-    powofx = newLaurent diff [1]
+    difference = srsD - maxm
+    powofx = newLaurent difference [1]
     xfX =  multLaurent powofx fX
     expL = expLaurent xfX
     coeffsL = coeffsLaurent xfX
@@ -51,7 +48,7 @@ openPoly
   -> Opening Fr
 openPoly SRS{..} _commitment z fX
   = let fz = evalLaurent fX z
-        wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` (newLaurent 0 [-z, 1])
+        wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` newLaurent 0 [-z, 1]
         expL = expLaurent wPoly
         coeffsL = coeffsLaurent wPoly
         (negCoeffs, posCoeffs)
@@ -70,15 +67,15 @@ pcV
   -> Fr
   -> Opening Fr
   -> Bool
-pcV srs@SRS{..} maxm commitment z (v, w)
+pcV SRS{..} maxm commitment z (v, w)
   = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
     <>
-    reducedPairing ((gG1 `mul` v) <> (w `mul` (negate z))) (hPositiveAlphaX !! 0) -- when i = 0
+    reducedPairing ((gG1 `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX !! 0) -- when i = 0
     ==
-    (reducedPairing commitment hxi)
+    reducedPairing commitment hxi
   where
-    diff = -srsD + maxm
-    hxi = if diff >= 0
-          then hPositiveX !! diff
-          else hNegativeX !! (abs diff - 1)
+    difference = -srsD + maxm
+    hxi = if difference >= 0
+          then hPositiveX !! difference
+          else hNegativeX !! (abs difference - 1)
 

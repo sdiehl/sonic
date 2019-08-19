@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
 import Protolude
@@ -6,72 +7,68 @@ import Bulletproofs.ArithmeticCircuit
 import GaloisField(GaloisField(rnd))
 import Sonic.SRS as SRS
 import Sonic.Protocol as Protocol
-import Sonic.Utils
 import Sonic.Curve (Fr)
+import Sonic.Utils (hadamardp)
 
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
-sonicProtocol circuit@(ArithCircuit gates wV cs) assignment x = do
+sonicProtocol circuit assignment x = do
   -- Setup for an SRS
-  srs <- SRS.new <$> getRandomR (2, 100) <*> pure x <*> rnd
+  srs <- SRS.new <$> randomD n <*> pure x <*> rnd
   -- Prover
-  (proof, y, z, ys) <- prover srs assignment circuit
+  (proof, y, z, ys) <- prove srs assignment circuit
   -- Verifier
-  pure $ verifier srs circuit proof y z ys
+  pure $ verify srs circuit proof y z ys
+  where
+    -- n: Number of multiplication constraints
+    n = length $ aL assignment
+    randomD n = getRandomR (7 * n, 100 * n)
 
-
---  Example:
---  5 linear constraints (q = 5):
---  aO[0] = aO[1]
---  aL[0] = V[0] - z
---  aL[1] = V[2] - z
---  aR[0] = V[1] - z
---  aR[1] = V[3] - z
+-- 5 linear constraints (q = 5):
+-- aO[0] = aO[1]
+-- aL[0] = V[0] - z
+-- aL[1] = V[2] - z
+-- aR[0] = V[1] - z
+-- aR[1] = V[3] - z
 --
---  2 multiplication constraint (implicit) (n = 2):
---  aL[0] * aR[0] = aO[0]
---  aL[1] * aR[1] = aO[1]
+-- 2 multiplication constraint (implicit) (n = 2):
+-- aL[0] * aR[0] = aO[0]
+-- aL[1] * aR[1] = aO[1]
 --
---  4 input values (m = 4)
-runExample :: IO ()
-runExample = do
-  -- Arithmetic circuit
-  z <- rnd
-  let cs = [0, -z, -z, -z, -z]
-      wV = [[0, 0, 0, 0]
-           ,[1, 0, 0, 0]
-           ,[0, 0, 1, 0]
-           ,[0, 1, 0 ,0]
-           ,[0, 0, 0, 1]]
-      arithCircuit = ArithCircuit gateWeights wV cs
+-- 4 input values (m = 4)
+arithCircuitExample :: Fr -> Fr -> (ArithCircuit Fr, Assignment Fr)
+arithCircuitExample x z =
+  let wL = [[0, 0]
+           ,[1, 0]
+           ,[0, 1]
+           ,[0, 0]
+           ,[0, 0]]
+      wR = [[0, 0]
+           ,[0, 0]
+           ,[0, 0]
+           ,[1, 0]
+           ,[0, 1]]
+      wO = [[1, -1]
+           ,[0, 0]
+           ,[0, 0]
+           ,[0, 0]
+           ,[0, 0]]
 
-  -- Assignment
-  let aL = [4 - z, 9 - z]
+      cs = [0, 4-z, 9-z, 9-z, 4-z]
+      aL = [4 - z, 9 - z]
       aR = [9 - z, 4 - z]
       aO = aL `hadamardp` aR
+      gateWeights = GateWeights wL wR wO
       assignment = Assignment aL aR aO
+      circuit = ArithCircuit gateWeights witness cs
+  in (circuit, assignment)
 
-  -- Run protocol
-  print =<< sonicProtocol arithCircuit assignment =<< rnd
-
-  where
-    gateWeights :: GateWeights Fr
-    gateWeights = GateWeights
-                  { wL = [[0, 0]
-                         ,[1, 0]
-                         ,[0, 1]
-                         ,[0, 0]
-                         ,[0, 0]]
-                  , wR = [[0, 0]
-                         ,[0, 0]
-                         ,[0, 0]
-                         ,[1, 0]
-                         ,[0, 1]]
-                  , wO = [[1, -1]
-                         ,[0, 0]
-                         ,[0, 0]
-                         ,[0, 0]
-                         ,[0, 0]]
-                  }
+runExample :: IO ()
+runExample = do
+  pX <- rnd
+  pZ <- rnd
+  let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample pX pZ
+  success <- sonicProtocol arithCircuit assignment pX
+  putText $ "Success: " <> show success
 
 main :: IO ()
 main = runExample

@@ -17,9 +17,7 @@ dependencies:
 - elliptic-curve
 - pairing
 - protolude
-- cryptonite
 - bulletproofs
-- wl-pprint-text
 - polynomial
 - MonadRandom
 
@@ -32,6 +30,19 @@ default-extensions:
   - FlexibleContexts
   - ScopedTypeVariables
   - RankNTypes
+
+ghc-options:
+  -Wall
+  -Werror
+  -Wcompat
+  -Wincomplete-record-updates
+  -Wredundant-constraints
+  -Wno-unused-matches
+  -Wno-name-shadowing
+  -Wno-type-defaults
+  -Wno-orphans
+  -Wno-incomplete-uni-patterns
+  -Wno-incomplete-patterns
 
 library:
   source-dirs: src
@@ -46,18 +57,23 @@ library:
 
 executables:
   sonic-example:
-    main:                Main.hs
-    source-dirs:         examples
+    main: Main.hs
+    source-dirs:
+      - examples
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
     - sonic
-
+    - tasty
+    - tasty-discover
+    - tasty-hunit
+    - tasty-quickcheck
+    - QuickCheck
 tests:
   sonic-test:
-    main: Driver.hs
+    main: Main.hs
     source-dirs: test
     dependencies:
       - sonic

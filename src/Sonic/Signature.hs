@@ -1,5 +1,6 @@
+-- The helper protocol for computing aggregated signatures of correct computation.
+
 {-# LANGUAGE RecordWildCards #-}
--- Signature of correct computation
 module Sonic.Signature where
 
 import Protolude
@@ -25,7 +26,6 @@ data HscProof f = HscProof
   , hscZ :: f
   }
 
--- Helper protocol
 hscP
   :: (MonadRandom m)
   => SRS
@@ -42,7 +42,7 @@ hscP srs@SRS{..} weights ys = do
       sQ = (\yi -> openPoly srs commit yi suX) <$> ys
   -- Random oracle
   z <- rnd
-  let (suz, qz) = openPoly srs commit z suX
+  let (_suz, qz) = openPoly srs commit z suX
   pure HscProof
           { hscS = ss
           , hscW = sW
@@ -52,8 +52,6 @@ hscP srs@SRS{..} weights ys = do
           , hscU = u
           , hscZ = z
           }
-  where
-    m = length ys
 
 hscV
   :: SRS

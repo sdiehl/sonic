@@ -1,24 +1,23 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE RecordWildCards #-}
-module Sonic.TestSignature where
+module Signature where
 
 import Protolude
-import Control.Monad.Random (getRandomR)
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import Test.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), GateWeights(..), Assignment(..))
 import GaloisField(GaloisField(rnd))
 
 import Sonic.Signature
-import Sonic.Utils
-import Sonic.Curve (Fr)
 import qualified Sonic.SRS as SRS
-import Sonic.Reference
 
+import Reference
+
+-- (s=s(z,y),sc) ← scP(info,s(X,Y),(z,y))
+-- check scV(info,s(X,Y),(z,y),(s,sc))
 test_signatures_of_computation :: TestTree
 test_signatures_of_computation
   = localOption (QuickCheckTests 20)

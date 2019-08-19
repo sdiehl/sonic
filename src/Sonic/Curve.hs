@@ -1,5 +1,22 @@
 -- Implementation over Barreto-Naehrig curve
-module Sonic.Curve where
+
+module Sonic.Curve
+  ( Fq
+  , Fq2
+  , Fq6
+  , Fq12
+  , Fr
+  , G1
+  , G2
+  , G2'
+  , GT
+  , gG1
+  , gG2
+  , gGT
+  , rG1
+  , rG2
+  , rGT
+  ) where
 
 import Protolude
 import qualified Curve.Weierstrass.BN254 as BN254

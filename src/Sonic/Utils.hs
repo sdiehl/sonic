@@ -3,13 +3,17 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DeriveAnyClass, DeriveGeneric #-}
-module Sonic.Utils where
+module Sonic.Utils
+  ( BiVariateLaurent
+  , hadamardp
+  , dot
+  , evalOnX
+  , evalOnY
+  , convertToTwoVariateX
+  , convertToTwoVariateY
+  ) where
 
 import Protolude
-import Text.PrettyPrint.Leijen.Text hiding ((<$>), (<>), char)
-import qualified Data.List as L
-import qualified Math.Polynomial as Poly
 import Math.Polynomial.Laurent
 
 import Sonic.Curve (Fr)
@@ -23,12 +27,6 @@ hadamardp a b | length a == length b = zipWith (*) a b
 
 dot :: Num a => [a] -> [a] -> a
 dot xs ys = sum $ hadamardp xs ys
-
-(^+^) :: Num a => [a] -> [a] -> [a]
-(^+^) = zipWith (+)
-
-(^-^) :: Num a => [a] -> [a] -> [a]
-(^-^) = zipWith (-)
 
 evalOnY :: Fr -> BiVariateLaurent Fr -> Laurent Fr
 evalOnY y l

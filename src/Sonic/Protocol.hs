@@ -1,5 +1,11 @@
+-- The interactive Sonic protocol to check that the prover knows a valid assignment of the wires in the circuit
+
 {-# LANGUAGE RecordWildCards #-}
-module Sonic.Protocol where
+module Sonic.Protocol
+  ( Proof
+  , prove
+  , verify
+  ) where
 
 import Protolude hiding (head)
 import Data.List (head)
@@ -8,13 +14,12 @@ import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
 import GaloisField (GaloisField(rnd))
 
--- import Text.PrettyPrint.Leijen.Text as PP (pretty, Pretty(..))
 import Sonic.SRS
 import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Signature
 import Sonic.Utils
-import Sonic.Curve (Fr, G1, G2, GT)
+import Sonic.Curve (Fr, G1)
 
 data Proof f = Proof
   { prR :: G1
@@ -28,13 +33,13 @@ data Proof f = Proof
   , prHscProof :: HscProof f
   }
 
-prover
+prove
   :: MonadRandom m
   => SRS
   -> Assignment Fr
   -> ArithCircuit Fr
   -> m (Proof Fr, Fr, Fr, [Fr])
-prover srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
+prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
   cns <- replicateM 4 rnd
   let rXY = rPoly assignment
       sumcXY = newLaurent
@@ -42,8 +47,8 @@ prover srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
       polyR' = addLaurent rXY sumcXY
       commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
-  -- zkV -> zkP: Send y to prover
-  -- (Random oracle)
+
+  -- zkV -> zkP: Send y to prover (Random oracle)
   y <- rnd
   let ky = kPoly cs n
   let sP = sPoly weights
@@ -51,12 +56,12 @@ prover srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
       tPY = evalOnY y tP
 
   let commitT = commitPoly srs srsD tPY
-  -- zkV -> zkP: Send y to prover
-  -- (Random oracle)
+
+  -- zkV -> zkP: Send y to prover (Random oracle)
   z <- rnd
   let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
       (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
-      (t', wt) = openPoly srs commitT z (evalOnY y tP)
+      (_, wt) = openPoly srs commitT z (evalOnY y tP)
 
   let s = evalLaurent (evalOnY y sP) z
   ys <- replicateM m rnd
@@ -82,7 +87,7 @@ prover srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
     m :: Int
     m = length . wL $ weights
 
-verifier
+verify
   :: SRS
   -> ArithCircuit Fr
   -> Proof Fr
@@ -90,7 +95,7 @@ verifier
   -> Fr
   -> [Fr]
   -> Bool
-verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
+verify srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
   = let t = prA * (prB + prS) - evalLaurent ky y
         checks = [ hscV srs ys weights prHscProof
                  , pcV srs (fromIntegral n) prR z (prA, prWa)

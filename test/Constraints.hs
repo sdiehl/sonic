@@ -1,27 +1,22 @@
-{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeApplications #-}
-module Sonic.TestConstraints where
+module Constraints where
 
 import Protolude
 import Data.List ((!!))
-import Test.Tasty
 import Test.Tasty.QuickCheck
-import Test.Tasty.HUnit
 import qualified Test.QuickCheck.Monadic as QCM
-import Data.List (zipWith4)
-import Control.Monad.Random (MonadRandom, getRandomR)
+import Control.Monad.Random (MonadRandom)
 
 import GaloisField(GaloisField(rnd))
 import Bulletproofs.ArithmeticCircuit
-import Bulletproofs.ArithmeticCircuit.Internal (computeInputValues, arithAssignmentGen)
-import Bulletproofs.Utils (commit)
+import Bulletproofs.ArithmeticCircuit.Internal (arithAssignmentGen)
 import Math.Polynomial.Laurent
-import Text.PrettyPrint.Leijen.Text as PP hiding ((<$>), dot)
 
 import Sonic.Utils
 import Sonic.Constraints
-import Sonic.Reference
-import Sonic.Curve (Fr, Fq)
+import Sonic.Curve (Fr)
+
+import Reference
 
 -- a·uq + b·vq + c·wq = kq
 prop_linear_constraints :: Property
@@ -33,22 +28,18 @@ prop_linear_constraints = QCM.monadicIO $ do
     , pure $ arithCircuitExample2 x z
     ]
   let GateWeights{..} = weights
-      n = case head wL of
-            Nothing -> panic "Empty weights"
-            Just xs -> length xs
-      kY = coeffsLaurent $ kPoly cs n
       assertions = zipWith
         (\i csq -> aL `dot` (wL !! i) + aR `dot` (wR !! i) + aO `dot` (wO !! i) == csq) [0..] cs
   pure $ and assertions === True
 
--- | r(X, Y) = r(XY, 1)
+-- r(X, Y) = r(XY, 1)
 prop_rPoly_prop :: Fr -> Fr -> Property
 prop_rPoly_prop x y = QCM.monadicIO $ do
   assignment <- lift $ generate $ arithAssignmentGen 3
   let rP = rPoly assignment
   pure $ evalLaurent (evalOnY y rP) x === evalLaurent (evalOnY 1 rP) (x * y)
 
--- | Constant term in polynomial r[X, Y] is zero
+-- Constant term in polynomial r[X, Y] is zero
 prop_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_rPoly_zero_constant x y = QCM.monadicIO $ do
   aL <- QCM.run $ replicateM 10 rnd
@@ -60,7 +51,7 @@ prop_rPoly_zero_constant x y = QCM.monadicIO $ do
            Nothing -> panic "Zero coeff does not exist"
            Just z -> z === 0
 
--- | Constant term in polynomial s[X, Y] is zero
+-- Constant term in polynomial s[X, Y] is zero
 prop_sPoly_zero_constant :: Fr -> Fr -> Property
 prop_sPoly_zero_constant x y = QCM.monadicIO $ do
   x <- QCM.run rnd
@@ -75,7 +66,7 @@ prop_sPoly_zero_constant x y = QCM.monadicIO $ do
            Nothing -> panic "Zero coeff does not exist"
            Just (z :: Fr) -> z === 0
 
--- | Constant term in polynomial s[X, Y] is zero
+-- Constant term in polynomial (r[X, Y] + s[X, Y]) is zero
 prop_sPoly_plus_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
   x <- QCM.run rnd

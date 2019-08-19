@@ -1,4 +1,6 @@
-{-# LANGUAGE RecordWildCards, FlexibleInstances, RankNTypes #-}
+-- Constraint system proposed by Bootle et al.
+
+{-# LANGUAGE RecordWildCards #-}
 module Sonic.Constraints
   ( rPoly
   , sPoly
@@ -10,14 +12,13 @@ where
 import Protolude hiding (head)
 import Data.List (zipWith4, head, (!!))
 import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial (poly, Endianness(..))
 import Math.Polynomial.Laurent
 
 import Sonic.Curve (Fr)
 import Sonic.Utils
 
 rPoly
-  :: (Eq f, Num f, Show f)
+  :: (Eq f, Num f)
   => Assignment f
   -> BiVariateLaurent f
 rPoly Assignment{..} =
@@ -30,7 +31,7 @@ rPoly Assignment{..} =
     n = length aL
 
 sPoly
-  :: forall f. (Eq f, Num f, Show f)
+  :: forall f. (Eq f, Num f)
   => GateWeights f
   -> BiVariateLaurent f
 sPoly GateWeights{..}

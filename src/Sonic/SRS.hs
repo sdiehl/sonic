@@ -1,5 +1,5 @@
-{-# LANGUAGE TypeApplications #-}
-
+-- Structured reference string with unknowns x and α
+-- This string is designed so that g^α is omitted from the reference string.
 module Sonic.SRS where
 
 import Protolude

@@ -1,11 +1,9 @@
 {-# LANGUAGE TypeApplications, ScopedTypeVariables #-}
-module Sonic.TestLaurent where
+module Laurent where
 
 import Protolude
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import Test.Tasty.HUnit
-import Text.PrettyPrint.Leijen.Text (pretty)
 
 import Math.Polynomial.Laurent
 import Sonic.Curve (Fr)
