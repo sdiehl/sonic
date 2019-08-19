@@ -12,7 +12,6 @@ import Test.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 
 import Bulletproofs.ArithmeticCircuit
-import GaloisField(GaloisField(rnd))
 
 import Sonic.Protocol
 import Sonic.Utils
@@ -34,17 +33,13 @@ import Sonic.Reference
 --
 --  4 input values (m = 4)
 test_sonic :: TestTree
-test_sonic = localOption (QuickCheckTests 10)
+test_sonic = localOption (QuickCheckTests 20)
   $ testProperty "Sonic protocol" $ QCM.monadicIO $ do
-    x <- QCM.run rnd
-    z <- QCM.run rnd
-    alpha <- QCM.run rnd
+    RandomParams {..} <- lift randomParams
 
-    let acExample = arithCircuitExample2 x z
-        arithCircuit@ArithCircuit{..} = aceCircuit acExample
-        assignment@Assignment{..} = aceAssignment acExample
+    let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample2 pX pZ
         n = length aL
-    d <- QCM.run (getRandomR (4 * n, 20 * n))
-    let srs = SRS.new d x alpha
-    (proof, y, z, ys) <- QCM.run $ prover srs assignment arithCircuit
+    d <- lift $ randomD n
+    let srs = SRS.new d pX pAlpha
+    (proof, y, z, ys) <- lift $ prover srs assignment arithCircuit
     QCM.assert $ verifier srs arithCircuit proof y z ys

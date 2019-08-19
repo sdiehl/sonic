@@ -23,18 +23,16 @@ test_signatures_of_computation :: TestTree
 test_signatures_of_computation
   = localOption (QuickCheckTests 20)
     $ testProperty "Signatures of computation" $ QCM.monadicIO $ do
-        x <- QCM.run rnd
-        z <- QCM.run rnd
-        alpha <- QCM.run rnd
-        d <- QCM.run (getRandomR (2, 100))
-        acExample <- QCM.run . generate $ oneof
-          [ pure $ arithCircuitExample1 x z
-          , pure $ arithCircuitExample2 x z
+        RandomParams{..} <- lift randomParams
+        (aCircuit@ArithCircuit{..}, assignment) <- lift . generate $ oneof
+          [ pure $ arithCircuitExample1 pX pZ
+          , pure $ arithCircuitExample2 pX pZ
           ]
-        let arithCircuit@ArithCircuit{..} = aceCircuit acExample
-            assignment@Assignment{..} = aceAssignment acExample
-        let srs = SRS.new d x alpha
-            m = length $ wL weights
-        ys <- QCM.run $ replicateM m rnd
-        proof <- QCM.run $ hscP srs weights ys
+        let m = length $ wL weights
+            n = length $ aL assignment
+
+        d <- lift $ randomD n
+        let srs = SRS.new d pX pAlpha
+        ys <- lift $ replicateM m rnd
+        proof <- lift $ hscP srs weights ys
         QCM.assert $ hscV srs ys weights proof

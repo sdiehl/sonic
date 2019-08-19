@@ -36,31 +36,22 @@ import Sonic.Reference
 test_tXy_commit_scheme :: TestTree
 test_tXy_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "tXy commitment scheme" $ QCM.monadicIO $ do
-      x <- QCM.run rnd
-      y <- QCM.run rnd
-      z <- QCM.run rnd
-      alpha <- QCM.run rnd
+      RandomParams{..} <- lift randomParams
 
-      let acExample = arithCircuitExample2 x z
-          acircuit@ArithCircuit{..} = aceCircuit acExample
-          assignment = aceAssignment acExample
+      let (acircuit@ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
           n = length . aL $ assignment
 
-      -- "...in our polynomial constraint system 3n < d
-      -- (otherwisewe cannot commit to t(X,Y)),
-      -- thus r(X,Y) has no (−d + n) term."
-      d <- QCM.run (getRandomR (4 * n, 20 * n))
-      let max = d
-      zeroCoeff <- QCM.run $ findZeroCoeff acircuit assignment
+      d <- lift $ randomD n
+      zeroCoeff <- lift $ findZeroCoeff acircuit assignment
 
       QCM.assert $ zeroCoeff == 0
 
-      let srs = SRS.new d x alpha
-          fX = evalOnY y $ tPoly (rPoly assignment) (sPoly weights) (kPoly cs n)
-          commitment = commitPoly srs max fX
-          opening = openPoly srs commitment z fX
+      let srs = SRS.new d pX pAlpha
+          fX = evalOnY pY $ tPoly (rPoly assignment) (sPoly weights) (kPoly cs n)
+          commitment = commitPoly srs d fX
+          opening = openPoly srs commitment pZ fX
 
-      QCM.assert $ pcV srs max commitment z opening
+      QCM.assert $ pcV srs d commitment pZ opening
   where
     findZeroCoeff :: MonadRandom m => ArithCircuit Fr -> Assignment Fr -> m Fr
     findZeroCoeff circuit@ArithCircuit{..} assignment = do
@@ -80,60 +71,41 @@ test_tXy_commit_scheme = localOption (QuickCheckTests 50) $
 test_rX1_commit_scheme :: TestTree
 test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "rX1 commitment scheme" $ QCM.monadicIO $ do
-      x <- QCM.run rnd
-      z <- QCM.run rnd
-      alpha <- QCM.run rnd
-
-      let acExample = arithCircuitExample2 x z
-          acircuit@ArithCircuit{..} = aceCircuit acExample
-          assignment = aceAssignment acExample
+      RandomParams{..} <- lift randomParams
+      let (acircuit@ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
           n = length . aL $ assignment
+      d <- lift $ randomD n
 
-      -- "...in our polynomial constraint system 3n < d
-      -- (otherwisewe cannot commit to t(X,Y)),
-      -- thus r(X,Y) has no (−d + n) term."
-      d <- QCM.run (getRandomR (4 * n, 20 * n))
-      let max = n
-
-      let srs = SRS.new d x alpha
-      cns <- QCM.run $ replicateM 4 rnd
+      let srs = SRS.new d pX pAlpha
+      cns <- lift $ replicateM 4 rnd
       let rXY = rPoly assignment
           sumcXY = newLaurent
                    (negate (2 * n + 4))
                    (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
           polyR' = addLaurent rXY sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
-          opening = openPoly srs commitment z (evalOnY 1 polyR')
+          opening = openPoly srs commitment pZ (evalOnY 1 polyR')
 
-      QCM.assert $ pcV srs max commitment z opening
+      QCM.assert $ pcV srs n commitment pZ opening
 
 test_rX1YZ_commit_scheme :: TestTree
 test_rX1YZ_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "rX1YZ commitment scheme" $ QCM.monadicIO $ do
-      x <- QCM.run rnd
-      y <- QCM.run rnd
-      z <- QCM.run rnd
-      alpha <- QCM.run rnd
+      RandomParams{..} <- lift randomParams
 
-      let acExample = arithCircuitExample2 x z
-          acircuit@ArithCircuit{..} = aceCircuit acExample
-          assignment = aceAssignment acExample
+      let (acircuit@ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
           n = length . aL $ assignment
 
-      -- "...in our polynomial constraint system 3n < d
-      -- (otherwisewe cannot commit to t(X,Y)),
-      -- thus r(X,Y) has no (−d + n) term."
-      d <- QCM.run (getRandomR (4 * n, 20 * n))
-      let max = n
+      d <- lift $ randomD n
 
-      let srs = SRS.new d x alpha
-      cns <- QCM.run $ replicateM 4 rnd
+      let srs = SRS.new d pX pAlpha
+      cns <- lift $ replicateM 4 rnd
       let rXY = rPoly assignment
           sumcXY = newLaurent
                    (negate (2 * n + 4))
                    (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
           polyR' = addLaurent rXY sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
-          opening = openPoly srs commitment (y * z) (evalOnY 1 polyR')
+          opening = openPoly srs commitment (pY * pZ) (evalOnY 1 polyR')
 
-      QCM.assert $ pcV srs max commitment (y * z) opening
+      QCM.assert $ pcV srs n commitment (pY * pZ) opening

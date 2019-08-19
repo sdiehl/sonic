@@ -97,7 +97,7 @@ verifier srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
                  , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)
                  , pcV srs srsD prT z (t, prWt)
                 ]
-    in traceShow checks $ and checks
+    in and checks
   where
     n = length . head . wL $ weights
     ky = kPoly cs n

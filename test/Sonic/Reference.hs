@@ -3,6 +3,9 @@ module Sonic.Reference where
 import Protolude
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
+import Control.Monad.Random (MonadRandom, getRandomR)
+import GaloisField(GaloisField(rnd))
+
 import Sonic.Utils
 import Sonic.Curve (Fr)
 
@@ -31,12 +34,7 @@ getZeroCoeff = zeroCoeff. getCoeffs
 -- Examples
 -------------
 
-data ACExample f = ACExample
-  { aceAssignment :: Assignment f
-  , aceCircuit :: ArithCircuit f
-  }
-
-arithCircuitExample1 :: Fr -> Fr -> ACExample Fr
+arithCircuitExample1 :: Fr -> Fr -> (ArithCircuit Fr, Assignment Fr)
 arithCircuitExample1 x z =
   let wL = [[1], [0]]
       wR = [[0], [1]]
@@ -47,10 +45,10 @@ arithCircuitExample1 x z =
       aO = aL `hadamardp` aR
       gateWeights = GateWeights wL wR wO
       assignment = Assignment aL aR aO
-      arithCircuit = ArithCircuit gateWeights [] cs
-  in ACExample assignment arithCircuit
+      circuit = ArithCircuit gateWeights [] cs
+  in (circuit, assignment)
 
-arithCircuitExample2 :: Fr -> Fr -> ACExample Fr
+arithCircuitExample2 :: Fr -> Fr -> (ArithCircuit Fr, Assignment Fr)
 arithCircuitExample2 x z =
   let wL = [[0, 0]
            ,[1, 0]
@@ -76,4 +74,27 @@ arithCircuitExample2 x z =
       gateWeights = GateWeights wL wR wO
       assignment = Assignment aL aR aO
       circuit = ArithCircuit gateWeights witness cs
-  in ACExample assignment circuit
+  in (circuit, assignment)
+
+-- "...in our polynomial constraint system 3n < d
+-- (otherwisewe cannot commit to t(X,Y)),
+-- thus r(X,Y) has no (−d + n) term."
+-- WARNING: Our constraint for the 'D' value used in the setup
+-- needs to be greater than 6 times the number of constraints 'n'
+randomD :: MonadRandom m => Int -> m Int
+randomD n = getRandomR (7 * n, 50 * n)
+
+data RandomParams = RandomParams
+  { pX :: Fr
+  , pY :: Fr
+  , pZ :: Fr
+  , pAlpha :: Fr
+  }
+
+randomParams :: MonadRandom m => m RandomParams
+randomParams = do
+  x <- rnd
+  y <- rnd
+  z <- rnd
+  alpha <- rnd
+  pure $ RandomParams x y z alpha

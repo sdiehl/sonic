@@ -28,13 +28,11 @@ prop_linear_constraints :: Property
 prop_linear_constraints = QCM.monadicIO $ do
   x <- QCM.run rnd
   z <- QCM.run rnd
-  acExample@ACExample{..} <- QCM.run . generate $ oneof
+  (acircuit@ArithCircuit{..}, assignment@Assignment{..}) <- QCM.run . generate $ oneof
     [ pure $ arithCircuitExample1 x z
     , pure $ arithCircuitExample2 x z
     ]
-  let Assignment{..} = aceAssignment
-      ArithCircuit{..} = aceCircuit
-      GateWeights{..} = weights
+  let GateWeights{..} = weights
       n = case head wL of
             Nothing -> panic "Empty weights"
             Just xs -> length xs
@@ -67,29 +65,29 @@ prop_sPoly_zero_constant :: Fr -> Fr -> Property
 prop_sPoly_zero_constant x y = QCM.monadicIO $ do
   x <- QCM.run rnd
   z <- QCM.run rnd
-  acExample@ACExample{..} <- QCM.run . generate $ oneof
+  (acircuit@ArithCircuit{..}, assignment) <- QCM.run . generate $ oneof
     [ pure $ arithCircuitExample1 x z
     , pure $ arithCircuitExample2 x z
     ]
-  let sXY = sPoly $ weights aceCircuit
-  r <- QCM.run rnd
+  let sXY = sPoly weights
+  r <- lift rnd
   pure $ case flip evalLaurent r <$> getZeroCoeff sXY of
            Nothing -> panic "Zero coeff does not exist"
-           Just z -> z === 0
+           Just (z :: Fr) -> z === 0
 
 -- | Constant term in polynomial s[X, Y] is zero
 prop_sPoly_plus_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
   x <- QCM.run rnd
   z <- QCM.run rnd
-  acExample@ACExample{..} <- QCM.run . generate $ oneof
-    [ pure $ arithCircuitExample1 x z
-    , pure $ arithCircuitExample2 x z
-    ]
-  let rXY = rPoly aceAssignment
-      sXY = sPoly $ weights aceCircuit
+  (acircuit@ArithCircuit{..}, assignment) <- QCM.run . generate $ oneof
+     [ pure $ arithCircuitExample1 x z
+     , pure $ arithCircuitExample2 x z
+     ]
+  let rXY = rPoly assignment
+      sXY = sPoly weights
       rXY' = rXY `addLaurent` sXY
-  r <- QCM.run rnd
+  r <- lift rnd
   pure $ case flip evalLaurent r <$> getZeroCoeff rXY' of
            Nothing -> panic "Zero coeff does not exist"
            Just z -> z === 0
@@ -100,11 +98,11 @@ prop_tPoly_zero_constant :: Property
 prop_tPoly_zero_constant = QCM.monadicIO $ do
   x <- QCM.run rnd
   z <- QCM.run rnd
-  acExample@ACExample{..} <- QCM.run . generate $ oneof
+  (acircuit@ArithCircuit{..}, assignment) <- QCM.run . generate $ oneof
     [ pure $ arithCircuitExample1 x z
     , pure $ arithCircuitExample2 x z
     ]
-  zeroCoeff <- QCM.run $ findTPolyZeroCoeff aceCircuit aceAssignment
+  zeroCoeff <- QCM.run $ findTPolyZeroCoeff acircuit assignment
   pure $ zeroCoeff === 0
   where
     findTPolyZeroCoeff :: MonadRandom m => ArithCircuit Fr -> Assignment Fr -> m Fr
