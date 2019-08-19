@@ -13,7 +13,7 @@ module Sonic.Utils
 
 import Protolude
 import Math.Polynomial.Laurent (Laurent, newLaurent, evalLaurent, expLaurent, coeffsLaurent)
-import GaloisField(GaloisField(..))
+import GaloisField (GaloisField(..))
 import Sonic.Curve (Fr)
 
 type BiVariateLaurent f = Laurent (Laurent f)
