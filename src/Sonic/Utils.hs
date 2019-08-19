@@ -13,7 +13,7 @@ module Sonic.Utils
 
 import Protolude
 import Math.Polynomial.Laurent (Laurent, newLaurent, evalLaurent, expLaurent, coeffsLaurent)
-
+import GaloisField(GaloisField(..))
 import Sonic.Curve (Fr)
 
 type BiVariateLaurent f = Laurent (Laurent f)
@@ -26,9 +26,7 @@ evalOnX :: Fr -> BiVariateLaurent Fr -> Laurent Fr
 evalOnX x l
   = sum $ zipWith f [expLaurent l ..] (coeffsLaurent l)
   where
-    f ex lau
-      | ex >= 0 = lau * (newLaurent 0 [x ^ ex])
-      | otherwise = lau * (newLaurent 0 [recip x ^ (abs ex)])
+    f ex lau = lau * (newLaurent 0 [x `pow` fromIntegral ex])
 
 -- f(X) -> f(X, 0)
 convertToTwoVariateX :: (Num f, Eq f) => Laurent f -> BiVariateLaurent f

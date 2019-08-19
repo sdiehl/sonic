@@ -39,48 +39,51 @@ prove
   -> Assignment Fr
   -> ArithCircuit Fr
   -> m (Proof Fr, Fr, Fr, [Fr])
-prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
-  cns <- replicateM 4 rnd
-  let rXY = rPoly assignment
-      sumcXY = newLaurent
-                (negate (2 * n + 4))
-                (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
-      polyR' = rXY + sumcXY
-      commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
+prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
+  if srsD < 7*n
+    then panic $ "Parameter d is not large enough: " <> show srsD <> " should be greater than " <>  show (7*n)
+    else do
+    cns <- replicateM 4 rnd
+    let rXY = rPoly assignment
+        sumcXY = newLaurent
+                 (negate (2 * n + 4))
+                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
+        polyR' = rXY + sumcXY
+        commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
 
-  -- zkV -> zkP: Send y to prover (Random oracle)
-  y <- rnd
-  let ky = kPoly cs n
-  let sP = sPoly weights
-  let tP = tPoly polyR' sP ky
-      tPY = evalOnY y tP
+    -- zkV -> zkP: Send y to prover (Random oracle)
+    y <- rnd
+    let ky = kPoly cs n
+    let sP = sPoly weights
+    let tP = tPoly polyR' sP ky
+        tPY = evalOnY y tP
 
-  let commitT = commitPoly srs srsD tPY
+    let commitT = commitPoly srs srsD tPY
 
-  -- zkV -> zkP: Send y to prover (Random oracle)
-  z <- rnd
-  let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
-      (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
-      (_, wt) = openPoly srs commitT z (evalOnY y tP)
+    -- zkV -> zkP: Send y to prover (Random oracle)
+    z <- rnd
+    let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
+        (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
+        (_, wt) = openPoly srs commitT z (evalOnY y tP)
 
-  let s = evalLaurent (evalOnY y sP) z
-  ys <- replicateM m rnd
-  hscProof <- hscP srs weights ys
-  pure ( Proof
-          { prR = commitR
-          , prT = commitT
-          , prA = a
-          , prWa = wa
-          , prB = b
-          , prWb = wb
-          , prWt = wt
-          , prS = s
-          , prHscProof = hscProof
-          }
-       , y
-       , z
-       , ys
-       )
+    let s = evalLaurent (evalOnY y sP) z
+    ys <- replicateM m rnd
+    hscProof <- hscP srs weights ys
+    pure ( Proof
+           { prR = commitR
+           , prT = commitT
+           , prA = a
+           , prWa = wa
+           , prB = b
+           , prWb = wb
+           , prWt = wt
+           , prS = s
+           , prHscProof = hscProof
+           }
+         , y
+         , z
+         , ys
+         )
   where
     n :: Int
     n = length aL
