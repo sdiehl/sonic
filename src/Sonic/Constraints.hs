@@ -6,16 +6,16 @@ module Sonic.Constraints
   , sPoly
   , tPoly
   , kPoly
-  )
-where
+  ) where
 
 import Protolude hiding (head)
 import Data.List (zipWith4, head, (!!))
-import Bulletproofs.ArithmeticCircuit
+import Bulletproofs.ArithmeticCircuit (Assignment(..), GateWeights(..))
 import Math.Polynomial.Laurent
+  (Laurent(..), newLaurent, zeroLaurent, expLaurent)
 
 import Sonic.Curve (Fr)
-import Sonic.Utils
+import Sonic.Utils (BiVariateLaurent, convertToTwoVariateX, convertToTwoVariateY, evalOnY)
 
 rPoly
   :: (Eq f, Num f)
@@ -37,19 +37,19 @@ sPoly
 sPoly GateWeights{..}
   = foldl'
     (\acc i -> acc
-      `addLaurent` newLaurent (-i) [uiY i]
-      `addLaurent` newLaurent i [viY i]
-      `addLaurent` newLaurent (i + n) [wiY i]
+      + newLaurent (-i) [uiY i]
+      + newLaurent i [viY i]
+      + newLaurent (i + n) [wiY i]
     ) zeroLaurent [1..n]
   where
     uiY, viY, wiY :: Int -> Laurent f
     uiY i = xiY i wL
     viY i = xiY i wR
-    wiY i = newLaurent (-i) [-1] `addLaurent` newLaurent i [-1] `addLaurent` xiY i wO
+    wiY i = newLaurent (-i) [-1] + newLaurent i [-1] + xiY i wO
 
     xiY :: Int -> [[f]] -> Laurent f
     xiY i xL =  foldl' (fxqi i) zeroLaurent (zip [1..] xL)
-    fxqi i acc (q, xLq) = acc `addLaurent` newLaurent (q + n) [xLq !! (i - 1)]
+    fxqi i acc (q, xLq) = acc + newLaurent (q + n) [xLq !! (i - 1)]
 
     -- n: multiplication constraints
     n = length $ head wL
@@ -61,9 +61,9 @@ tPoly
   -> BiVariateLaurent Fr
 tPoly rXY sXY kY
   -- r(X, 1) * (r(X,Y) + s(X, Y)) - k(Y)
-  = (rX1 `multLaurent` rXY') `addLaurent` k1Y
+  = (rX1 * rXY') + k1Y
   where
-    rXY' = rXY `addLaurent` sXY
+    rXY' = rXY + sXY
     rX1 = convertToTwoVariateX $ evalOnY 1 rXY
     k1Y = convertToTwoVariateY $ negate kY
 

@@ -1,19 +1,22 @@
 -- The helper protocol for computing aggregated signatures of correct computation.
 
 {-# LANGUAGE RecordWildCards #-}
-module Sonic.Signature where
+module Sonic.Signature
+  ( HscProof(..)
+  , hscP
+  , hscV
+  ) where
 
 import Protolude
-import Sonic.SRS
 import Control.Monad.Random (MonadRandom)
-
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial.Laurent
+import Bulletproofs.ArithmeticCircuit (GateWeights(..))
+import Math.Polynomial.Laurent (evalLaurent)
 import GaloisField (GaloisField(rnd))
 
-import Sonic.Utils as Utils
-import Sonic.Constraints
-import Sonic.CommitmentScheme
+import Sonic.Utils (evalOnX, evalOnY)
+import Sonic.Constraints (sPoly)
+import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
+import Sonic.SRS (SRS(..))
 import Sonic.Curve (Fr, G1)
 
 data HscProof f = HscProof
@@ -63,9 +66,5 @@ hscV srs@SRS{..} ys weights proof@HscProof{..}
   = let sz = evalLaurent (evalOnY hscZ (sPoly weights)) hscU
     in and
         $ pcV srs srsD hscC hscZ (sz, hscQz)
-        : (zipWith (\sj (wsj, wj) -> pcV srs srsD sj hscU (wsj, wj)) hscS hscW
-        ++ zipWith (\yj (wsj, wj) -> pcV srs srsD hscC yj (wsj, wj)) ys hscQ)
-
-
-
-
+        : (zipWith (flip (pcV srs srsD) hscU) hscS hscW
+        ++ zipWith (pcV srs srsD hscC) ys hscQ)

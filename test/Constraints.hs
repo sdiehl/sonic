@@ -6,7 +6,6 @@ import Data.List ((!!))
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 import Control.Monad.Random (MonadRandom)
-
 import GaloisField(GaloisField(rnd))
 import Bulletproofs.ArithmeticCircuit
 import Bulletproofs.ArithmeticCircuit.Internal (arithAssignmentGen)
@@ -14,8 +13,7 @@ import Math.Polynomial.Laurent
 
 import Sonic.Utils
 import Sonic.Constraints
-import Sonic.Curve (Fr)
-
+import Sonic.Curve
 import Reference
 
 -- a·uq + b·vq + c·wq = kq
@@ -31,6 +29,8 @@ prop_linear_constraints = QCM.monadicIO $ do
       assertions = zipWith
         (\i csq -> aL `dot` (wL !! i) + aR `dot` (wR !! i) + aO `dot` (wO !! i) == csq) [0..] cs
   pure $ and assertions === True
+  where
+    dot a b = sum $ zipWith (*) a b
 
 -- r(X, Y) = r(XY, 1)
 prop_rPoly_prop :: Fr -> Fr -> Property
@@ -44,7 +44,7 @@ prop_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_rPoly_zero_constant x y = QCM.monadicIO $ do
   aL <- QCM.run $ replicateM 10 rnd
   aR <- QCM.run $ replicateM 10 rnd
-  let aO = aL `hadamardp` aR
+  let aO = zipWith (*) aL aR
       rXY = rPoly @Fr (Assignment aL aR aO)
   r <- QCM.run rnd
   pure $ case flip evalLaurent r <$> getZeroCoeff rXY of
@@ -110,5 +110,3 @@ prop_tPoly_zero_constant = QCM.monadicIO $ do
       case flip evalLaurent r <$> getZeroCoeff tP of
         Nothing -> panic "Zero coeff does not exist"
         Just z -> pure z
-
-

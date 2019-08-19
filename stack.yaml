@@ -1,7 +1,7 @@
 resolver: lts-13.23
 
 packages:
-- .
+  - .
 
 extra-deps:
   - bulletproofs-1.0.1

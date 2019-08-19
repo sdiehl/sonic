@@ -32,6 +32,7 @@ sonicProtocol circuit assignment x = do
   where
     -- n: Number of multiplication constraints
     n = length $ aL assignment
+	-- 'd' should be large enough to support the circuit depth 'n'
     randomD n = getRandomR (7 * n, 100 * n)
 ```
 

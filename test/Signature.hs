@@ -3,7 +3,6 @@
 module Signature where
 
 import Protolude
-
 import Test.Tasty
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM

@@ -6,7 +6,6 @@ import Math.Polynomial.Laurent
 import Control.Monad.Random (MonadRandom, getRandomR)
 import GaloisField(GaloisField(rnd))
 
-import Sonic.Utils
 import Sonic.Curve (Fr)
 
 data Coeffs f = Coeffs
@@ -55,14 +54,14 @@ arithCircuitExample1 x z =
       cs = [7 + 3, 2 + 10]
       aL = [10]
       aR = [12]
-      aO = aL `hadamardp` aR
+      aO = zipWith (*) aL aR
       gateWeights = GateWeights wL wR wO
       assignment = Assignment aL aR aO
       circuit = ArithCircuit gateWeights [] cs
   in (circuit, assignment)
 
 -- Example 2
--- 5 linear constraints (q = 5):
+-- 5 linear constraint (q = 5):
 -- aO[0] = aO[1]
 -- aL[0] = V[0] - z
 -- aL[1] = V[2] - z
@@ -95,7 +94,7 @@ arithCircuitExample2 x z =
       cs = [0, 4-z, 9-z, 9-z, 4-z]
       aL = [4 - z, 9 - z]
       aR = [9 - z, 4 - z]
-      aO = aL `hadamardp` aR
+      aO = zipWith (*) aL aR
       gateWeights = GateWeights wL wR wO
       assignment = Assignment aL aR aO
       circuit = ArithCircuit gateWeights witness cs
@@ -103,7 +102,7 @@ arithCircuitExample2 x z =
 
 -- As stated in the paper:
 -- "...in our polynomial constraint system 3n < d
--- (otherwisewe cannot commit to t(X,Y)),
+-- (otherwise we cannot commit to t(X,Y)),
 -- thus r(X,Y) has no (−d + n) term."
 -- WARNING: Our constraint for the 'D' value used in the setup
 -- needs to be greater than 7 times the number of constraints 'n'

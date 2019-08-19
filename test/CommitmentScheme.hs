@@ -10,11 +10,12 @@ import Control.Monad.Random (MonadRandom)
 import GaloisField(GaloisField(rnd))
 import Math.Polynomial.Laurent
 import Bulletproofs.ArithmeticCircuit
+
 import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Utils
 import qualified Sonic.SRS as SRS
-import Sonic.Curve  (Fr)
+import Sonic.Curve
 import Reference
 
 -- T ← Commit(bp,srs,d,t(X,y))

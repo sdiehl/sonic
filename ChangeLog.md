@@ -3,7 +3,7 @@
 ## 0.2
 
 * Fix leak: Prover should not receive `x` and `g^{\alpha}` should not be shared.
-* Update dependencies: galois-field, elliptic-curve and bulletproofs
+* Update dependencies: galois-field, pairing, elliptic-curve and bulletproofs
 
 ## 0.1
 

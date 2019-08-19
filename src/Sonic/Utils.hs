@@ -5,8 +5,6 @@
 {-# LANGUAGE TypeApplications #-}
 module Sonic.Utils
   ( BiVariateLaurent
-  , hadamardp
-  , dot
   , evalOnX
   , evalOnY
   , convertToTwoVariateX
@@ -14,19 +12,11 @@ module Sonic.Utils
   ) where
 
 import Protolude
-import Math.Polynomial.Laurent
+import Math.Polynomial.Laurent (Laurent, newLaurent, evalLaurent, expLaurent, coeffsLaurent)
 
 import Sonic.Curve (Fr)
 
 type BiVariateLaurent f = Laurent (Laurent f)
-
--- | Hadamard product or entry wise multiplication of two vectors
-hadamardp :: Num a => [a] -> [a] -> [a]
-hadamardp a b | length a == length b = zipWith (*) a b
-              | otherwise = panic "Vector sizes must match"
-
-dot :: Num a => [a] -> [a] -> a
-dot xs ys = sum $ hadamardp xs ys
 
 evalOnY :: Fr -> BiVariateLaurent Fr -> Laurent Fr
 evalOnY y l
@@ -37,8 +27,8 @@ evalOnX x l
   = sum $ zipWith f [expLaurent l ..] (coeffsLaurent l)
   where
     f ex lau
-      | ex >= 0 = lau `multLaurent` (newLaurent 0 [x ^ ex])
-      | otherwise = lau `multLaurent` (newLaurent 0 [recip x ^ (abs ex)])
+      | ex >= 0 = lau * (newLaurent 0 [x ^ ex])
+      | otherwise = lau * (newLaurent 0 [recip x ^ (abs ex)])
 
 -- f(X) -> f(X, 0)
 convertToTwoVariateX :: (Num f, Eq f) => Laurent f -> BiVariateLaurent f
@@ -48,4 +38,3 @@ convertToTwoVariateX l
 -- f(Y) -> f(0, Y)
 convertToTwoVariateY :: (Num f, Eq f) => Laurent f -> BiVariateLaurent f
 convertToTwoVariateY l = newLaurent 0 [l]
-

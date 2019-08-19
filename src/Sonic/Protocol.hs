@@ -10,15 +10,15 @@ module Sonic.Protocol
 import Protolude hiding (head)
 import Data.List (head)
 import Control.Monad.Random (MonadRandom)
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial.Laurent
+import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
+import Math.Polynomial.Laurent (newLaurent, evalLaurent)
 import GaloisField (GaloisField(rnd))
 
-import Sonic.SRS
-import Sonic.Constraints
-import Sonic.CommitmentScheme
-import Sonic.Signature
-import Sonic.Utils
+import Sonic.SRS (SRS(..))
+import Sonic.Constraints (rPoly, sPoly, tPoly, kPoly)
+import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
+import Sonic.Signature (HscProof(..), hscP, hscV)
+import Sonic.Utils (evalOnY)
 import Sonic.Curve (Fr, G1)
 
 data Proof f = Proof
@@ -45,7 +45,7 @@ prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} = do
       sumcXY = newLaurent
                 (negate (2 * n + 4))
                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
-      polyR' = addLaurent rXY sumcXY
+      polyR' = rXY + sumcXY
       commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
 
   -- zkV -> zkP: Send y to prover (Random oracle)

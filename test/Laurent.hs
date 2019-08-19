@@ -4,8 +4,8 @@ module Laurent where
 import Protolude
 import Test.Tasty
 import Test.Tasty.QuickCheck
-
 import Math.Polynomial.Laurent
+
 import Sonic.Curve (Fr)
 import Sonic.Utils
 

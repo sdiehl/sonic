@@ -5,32 +5,27 @@ module Sonic.CommitmentScheme
   ( commitPoly
   , openPoly
   , pcV
-  )
-where
+  ) where
 
 import Protolude
 import Data.List ((!!))
 import Pairing.Pairing (reducedPairing)
-
 import Math.Polynomial.Laurent
+  (Laurent, newLaurent, quotLaurent, evalLaurent, expLaurent, coeffsLaurent)
+import Curve (Curve(..), Group(..))
 
-import Curve (Curve(..))
-import Sonic.SRS
-import Sonic.Curve (Fr, G1, gG1)
+import Sonic.SRS (SRS(..))
+import Sonic.Curve (Fr, G1, GT)
 
 type Opening f = (f, G1)
 
-commitPoly
-  :: SRS
-  -> Int
-  -> Laurent Fr
-  -> G1
+commitPoly :: SRS -> Int -> Laurent Fr -> G1
 commitPoly SRS{..} maxm fX
   = foldl' (<>) mempty (negPowers ++ posPowers)
   where
     difference = srsD - maxm
     powofx = newLaurent difference [1]
-    xfX =  multLaurent powofx fX
+    xfX =  powofx * fX
     expL = expLaurent xfX
     coeffsL = coeffsLaurent xfX
     (negCoeffs, posCoeffs)
@@ -40,12 +35,7 @@ commitPoly SRS{..} maxm fX
     negPowers = zipWith mul gNegativeAlphaX (reverse negCoeffs)
     posPowers = zipWith mul gPositiveAlphaX posCoeffs
 
-openPoly
-  :: SRS
-  -> G1
-  -> Fr
-  -> Laurent Fr
-  -> Opening Fr
+openPoly :: SRS -> G1 -> Fr -> Laurent Fr -> Opening Fr
 openPoly SRS{..} _commitment z fX
   = let fz = evalLaurent fX z
         wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` newLaurent 0 [-z, 1]
@@ -68,14 +58,13 @@ pcV
   -> Opening Fr
   -> Bool
 pcV SRS{..} maxm commitment z (v, w)
-  = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
-    <>
-    reducedPairing ((gG1 `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX !! 0) -- when i = 0
-    ==
-    reducedPairing commitment hxi
+  = eA <> eB == eC
   where
     difference = -srsD + maxm
     hxi = if difference >= 0
           then hPositiveX !! difference
           else hNegativeX !! (abs difference - 1)
-
+    eA, eB, eC :: GT
+    eA = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
+    eB = reducedPairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX !! 0) -- when i = 0
+    eC = reducedPairing commitment hxi

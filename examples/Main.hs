@@ -5,10 +5,10 @@ import Protolude
 import Control.Monad.Random (getRandomR)
 import Bulletproofs.ArithmeticCircuit
 import GaloisField(GaloisField(rnd))
+
 import Sonic.SRS as SRS
-import Sonic.Protocol as Protocol
+import Sonic.Protocol
 import Sonic.Curve (Fr)
-import Sonic.Utils (hadamardp)
 
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
 sonicProtocol circuit assignment x = do
@@ -30,7 +30,7 @@ sonicProtocol circuit assignment x = do
 -- aR[0] = V[1] - z
 -- aR[1] = V[3] - z
 --
--- 2 multiplication constraint (implicit) (n = 2):
+-- 2 multiplication constraints (implicit) (n = 2):
 -- aL[0] * aR[0] = aO[0]
 -- aL[1] * aR[1] = aO[1]
 --
@@ -56,7 +56,7 @@ arithCircuitExample x z =
       cs = [0, 4-z, 9-z, 9-z, 4-z]
       aL = [4 - z, 9 - z]
       aR = [9 - z, 4 - z]
-      aO = aL `hadamardp` aR
+      aO = zipWith (*) aL aR
       gateWeights = GateWeights wL wR wO
       assignment = Assignment aL aR aO
       circuit = ArithCircuit gateWeights witness cs
