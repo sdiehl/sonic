@@ -77,7 +77,7 @@ prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
      ]
   let rXY = rPoly assignment
       sXY = sPoly weights
-      rXY' = rXY `addLaurent` sXY
+      rXY' = rXY + sXY
   r <- lift rnd
   pure $ case flip evalLaurent r <$> getZeroCoeff rXY' of
            Nothing -> panic "Zero coeff does not exist"

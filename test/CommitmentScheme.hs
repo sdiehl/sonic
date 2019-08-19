@@ -73,7 +73,7 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
           sumcXY = newLaurent
                    (negate (2 * n + 4))
                    (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
-          polyR' = addLaurent rXY sumcXY
+          polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
           opening = openPoly srs commitment pZ (evalOnY 1 polyR')
 
@@ -98,7 +98,7 @@ test_rX1YZ_commit_scheme = localOption (QuickCheckTests 50) $
           sumcXY = newLaurent
                    (negate (2 * n + 4))
                    (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
-          polyR' = addLaurent rXY sumcXY
+          polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
           opening = openPoly srs commitment (pY * pZ) (evalOnY 1 polyR')
 
