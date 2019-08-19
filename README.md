@@ -43,7 +43,7 @@ multiplication constraints:
 runExample :: IO ()
 runExample = do
   RandomParams {pX, pZ} <- lift randomParams
-  let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample2 pX pZ
+  let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample pX pZ
   success <- sonicProtocol arithCircuit assignment pX
   putText $ "Success: " <> show success
 ```
