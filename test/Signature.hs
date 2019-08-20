@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE RecordWildCards #-}
 module Signature where
 
@@ -22,7 +21,7 @@ test_signatures_of_computation
   = localOption (QuickCheckTests 20)
     $ testProperty "Signatures of computation" $ QCM.monadicIO $ do
         RandomParams{..} <- lift randomParams
-        (aCircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
+        (ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
         let m = length $ wL weights
             n = length $ aL assignment
 
