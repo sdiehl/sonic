@@ -19,7 +19,6 @@ import Reference
 prop_linear_constraints :: Property
 prop_linear_constraints = QCM.monadicIO $ do
   (acircuit@ArithCircuit{..}, assignment@Assignment{..}) <- lift . generate $ rndCircuit
-
   let GateWeights{..} = weights
       assertions = zipWith
         (\i csq -> aL `dot` (wL !! i) + aR `dot` (wR !! i) + aO `dot` (wO !! i) == csq) [0..] cs
