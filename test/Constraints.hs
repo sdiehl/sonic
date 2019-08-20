@@ -8,7 +8,6 @@ import qualified Test.QuickCheck.Monadic as QCM
 import Control.Monad.Random (MonadRandom)
 import GaloisField(GaloisField(rnd))
 import Bulletproofs.ArithmeticCircuit
-import Bulletproofs.ArithmeticCircuit.Internal (arithAssignmentGen)
 import Math.Polynomial.Laurent
 
 import Sonic.Utils
@@ -19,12 +18,8 @@ import Reference
 -- a·uq + b·vq + c·wq = kq
 prop_linear_constraints :: Property
 prop_linear_constraints = QCM.monadicIO $ do
-  x <- QCM.run rnd
-  z <- QCM.run rnd
-  (acircuit@ArithCircuit{..}, assignment@Assignment{..}) <- QCM.run . generate $ oneof
-    [ pure $ arithCircuitExample1 x z
-    , pure $ arithCircuitExample2 x z
-    ]
+  (acircuit@ArithCircuit{..}, assignment@Assignment{..}) <- lift . generate $ rndCircuit
+
   let GateWeights{..} = weights
       assertions = zipWith
         (\i csq -> aL `dot` (wL !! i) + aR `dot` (wR !! i) + aO `dot` (wO !! i) == csq) [0..] cs
@@ -54,12 +49,7 @@ prop_rPoly_zero_constant x y = QCM.monadicIO $ do
 -- Constant term in polynomial s[X, Y] is zero
 prop_sPoly_zero_constant :: Fr -> Fr -> Property
 prop_sPoly_zero_constant x y = QCM.monadicIO $ do
-  x <- QCM.run rnd
-  z <- QCM.run rnd
-  (acircuit@ArithCircuit{..}, assignment) <- QCM.run . generate $ oneof
-    [ pure $ arithCircuitExample1 x z
-    , pure $ arithCircuitExample2 x z
-    ]
+  (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
   let sXY = sPoly weights
   r <- lift rnd
   pure $ case flip evalLaurent r <$> getZeroCoeff sXY of
@@ -69,12 +59,7 @@ prop_sPoly_zero_constant x y = QCM.monadicIO $ do
 -- Constant term in polynomial (r[X, Y] + s[X, Y]) is zero
 prop_sPoly_plus_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
-  x <- QCM.run rnd
-  z <- QCM.run rnd
-  (acircuit@ArithCircuit{..}, assignment) <- QCM.run . generate $ oneof
-     [ pure $ arithCircuitExample1 x z
-     , pure $ arithCircuitExample2 x z
-     ]
+  (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
   let rXY = rPoly assignment
       sXY = sPoly weights
       rXY' = rXY + sXY
@@ -87,12 +72,7 @@ prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
 -- demonstrating that the constraint system is satisfied
 prop_tPoly_zero_constant :: Property
 prop_tPoly_zero_constant = QCM.monadicIO $ do
-  x <- QCM.run rnd
-  z <- QCM.run rnd
-  (acircuit@ArithCircuit{..}, assignment) <- QCM.run . generate $ oneof
-    [ pure $ arithCircuitExample1 x z
-    , pure $ arithCircuitExample2 x z
-    ]
+  (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
   zeroCoeff <- QCM.run $ findTPolyZeroCoeff acircuit assignment
   pure $ zeroCoeff === 0
   where

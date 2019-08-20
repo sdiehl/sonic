@@ -1,7 +1,9 @@
+{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 module Reference where
 
 import Protolude
-import Bulletproofs.ArithmeticCircuit
+import Test.QuickCheck
+import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Math.Polynomial.Laurent
 import Control.Monad.Random (MonadRandom, getRandomR)
 import GaloisField(GaloisField(rnd))
@@ -123,3 +125,53 @@ randomParams = do
   z <- rnd
   alpha <- rnd
   pure $ RandomParams x y z alpha
+
+-------------------
+-- Arbitrary
+-------------------
+
+rndCircuit :: Gen (ArithCircuit Fr, Assignment Fr)
+rndCircuit = do
+  n <- choose (1, 20)
+  m <- choose (1, n)
+  assignment <- arithAssignmentGen n
+  circuit <- arithCircuitGen assignment m
+  pure (circuit, assignment)
+
+arithCircuitGen :: Assignment Fr -> Int -> Gen (ArithCircuit Fr)
+arithCircuitGen assignment@Assignment{aL, aR, aO} m = do
+  weights@GateWeights{..} <- gateWeightsGen m n
+  let gateWeights = GateWeights wL wR wO
+
+  let cs = traverseDot aL wL ^+^ traverseDot aR wR ^+^ traverseDot aO wO
+  pure $ ArithCircuit gateWeights witness cs
+    where
+      gateWeightsGen :: Int -> Int -> Gen (GateWeights Fr)
+      gateWeightsGen l n = do
+        let genVec = (\i ->
+                         insertAt i (oneVector n) (replicate (l - 1) (zeroVector n))
+                     ) <$> choose (0, l)
+        wL <- genVec
+        wR <- genVec
+        wO <- genVec
+        pure $ GateWeights wL wR wO
+
+      zeroVector x = replicate x 0
+      oneVector x = replicate x 1
+
+      insertAt :: Int -> a -> [a] -> [a]
+      insertAt z y xs = let (as, bs) = splitAt z xs in as ++ (y : bs)
+
+      n = length aL
+
+      traverseDot :: [Fr] -> [[Fr]] -> [Fr]
+      traverseDot v m = sum . zipWith (*) v <$> m
+
+      (^+^) = zipWith (+)
+
+arithAssignmentGen :: Int -> Gen (Assignment Fr)
+arithAssignmentGen n = do
+    aL <- vectorOf n arbitrary
+    aR <- vectorOf n arbitrary
+    let aO = zipWith (*) aL aR
+    pure $ Assignment aL aR aO

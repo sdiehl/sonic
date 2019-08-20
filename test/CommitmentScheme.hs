@@ -22,16 +22,13 @@ import Reference
 -- (t=t(z,y),Wt) ← Open(T,z,t(X,y)))
 -- check pcV(bp,srs,d,T,z,(t,Wt))
 test_tXy_commit_scheme :: TestTree
-test_tXy_commit_scheme = localOption (QuickCheckTests 50) $
+test_tXy_commit_scheme = localOption (QuickCheckTests 25) $
   testProperty "tXy commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
-
-      let (acircuit@ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
-          n = length . aL $ assignment
-
+      (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
+      let n = length . aL $ assignment
       d <- lift $ randomD n
       zeroCoeff <- lift $ findZeroCoeff acircuit assignment
-
       QCM.assert $ zeroCoeff == 0
 
       let srs = SRS.new d pX pAlpha
@@ -60,11 +57,11 @@ test_tXy_commit_scheme = localOption (QuickCheckTests 50) $
 -- (a=r(z,1),Wa) ← Open(R,z,r(X,1))
 -- check pcV(bp,srs,n,R,z,(a,Wa))
 test_rX1_commit_scheme :: TestTree
-test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
+test_rX1_commit_scheme = localOption (QuickCheckTests 25) $
   testProperty "rX1 commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
-      let (ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
-          n = length . aL $ assignment
+      (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
+      let n = length . aL $ assignment
       d <- lift $ randomD n
 
       let srs = SRS.new d pX pAlpha
@@ -83,12 +80,12 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
 -- (a=r(z,1),Wa) ← Open(R,yz,r(X,1))
 -- check pcV(bp,srs,n,R,yz,(a,Wa))
 test_rX1YZ_commit_scheme :: TestTree
-test_rX1YZ_commit_scheme = localOption (QuickCheckTests 50) $
+test_rX1YZ_commit_scheme = localOption (QuickCheckTests 25) $
   testProperty "rX1YZ commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
 
-      let (ArithCircuit{..}, assignment) = arithCircuitExample2 pX pZ
-          n = length . aL $ assignment
+      (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
+      let n = length . aL $ assignment
 
       d <- lift $ randomD n
 
