@@ -1,5 +1,4 @@
-{-# LANGUAGE TypeApplications #-} 
-{-# LANGUAGE RecordWildCards #-} 
+{-# LANGUAGE RecordWildCards #-}
 module Protocol where
 
 import Protolude
@@ -13,11 +12,11 @@ import qualified Sonic.SRS as SRS
 import Reference
 
 test_sonic :: TestTree
-test_sonic = localOption (QuickCheckTests 20)
+test_sonic = localOption (QuickCheckTests 25)
   $ testProperty "Sonic protocol" $ QCM.monadicIO $ do
     RandomParams {..} <- lift randomParams
-    let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample2 pX pZ
-        n = length aL
+    (arithCircuit, assignment@Assignment{..}) <- lift . generate $ rndCircuit
+    let n = length aL
     d <- lift $ randomD n
     let srs = SRS.new d pX pAlpha
     (proof, y, z, ys) <- lift $ prove srs assignment arithCircuit

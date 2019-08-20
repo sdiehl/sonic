@@ -4,6 +4,7 @@
 
 * Fix leak: Prover should not receive `x` and `g^{\alpha}` should not be shared.
 * Update dependencies: galois-field, pairing, elliptic-curve and bulletproofs
+* Test protocol with arbitrary circuits
 
 ## 0.1
 
