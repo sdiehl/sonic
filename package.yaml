@@ -1,5 +1,5 @@
 name:                sonic
-version:             0.1.0
+version:             0.2.0
 github:              "adjoint-io/sonic"
 license:             MIT
 maintainer:          "Adjoint Inc (info@adjoint.io)"
