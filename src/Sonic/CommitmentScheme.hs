@@ -1,5 +1,6 @@
 -- Polynomial commitment scheme inspired by Kate et al.
 
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE RecordWildCards #-}
 module Sonic.CommitmentScheme
   ( commitPoly
@@ -7,47 +8,48 @@ module Sonic.CommitmentScheme
   , pcV
   ) where
 
-import Protolude
-import Data.List ((!!))
-import Pairing.Pairing (reducedPairing)
-import Math.Polynomial.Laurent
-  (Laurent, newLaurent, quotLaurent, evalLaurent, expLaurent, coeffsLaurent)
+import Protolude hiding (quot)
 import Curve (Curve(..), Group(..))
+import Data.Euclidean (quot)
+import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly)
+import qualified Data.Vector as V
+import Pairing.Pairing (reducedPairing)
 
 import Sonic.SRS (SRS(..))
 import Sonic.Curve (Fr, G1, GT)
 
 type Opening f = (f, G1)
 
-commitPoly :: SRS -> Int -> Laurent Fr -> G1
+commitPoly :: SRS -> Int -> VPoly Fr -> G1
 commitPoly SRS{..} maxm fX
-  = foldl' (<>) mempty (negPowers ++ posPowers)
+  = foldl' (<>) mempty (negPowers V.++ posPowers)
   where
     difference = srsD - maxm
-    powofx = newLaurent difference [1]
-    xfX =  powofx * fX
-    expL = expLaurent xfX
-    coeffsL = coeffsLaurent xfX
+    powofx = monomial difference 1
+    xfX = unPoly (powofx * fX)
+    expL = fst (xfX V.! 0)
+    coeffsL = snd <$> xfX
     (negCoeffs, posCoeffs)
       = if expL < 0
-        then splitAt (abs expL) coeffsL
+        then V.splitAt (abs expL) coeffsL
         else ([], coeffsL)
-    negPowers = zipWith mul gNegativeAlphaX (reverse negCoeffs)
-    posPowers = zipWith mul gPositiveAlphaX posCoeffs
+    negPowers = V.zipWith mul gNegativeAlphaX (V.reverse negCoeffs)
+    posPowers = V.zipWith mul gPositiveAlphaX posCoeffs
 
-openPoly :: SRS -> G1 -> Fr -> Laurent Fr -> Opening Fr
+openPoly :: SRS -> G1 -> Fr -> VPoly Fr -> Opening Fr
 openPoly SRS{..} _commitment z fX
-  = let fz = evalLaurent fX z
-        wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` newLaurent 0 [-z, 1]
-        expL = expLaurent wPoly
-        coeffsL = coeffsLaurent wPoly
+  = let fz = eval fX z
+        wPoly = fX - monomial 0 fz `quot` toPoly [(0, -z), (1, 1)]
+        poly = unPoly wPoly
+        expL = fst (poly V.! 0)
+        coeffsL = snd <$> poly
         (negCoeffs, posCoeffs)
           = if expL < 0
-            then splitAt (abs expL) coeffsL
-            else splitAt 0 coeffsL
-        negPowers = zipWith mul gNegativeX (reverse negCoeffs)
-        posPowers = zipWith mul gPositiveX posCoeffs
-        w = foldl' (<>) mempty (negPowers ++ posPowers)
+            then V.splitAt (abs expL) coeffsL
+            else V.splitAt 0 coeffsL
+        negPowers = V.zipWith mul gNegativeX (V.reverse negCoeffs)
+        posPowers = V.zipWith mul gPositiveX posCoeffs
+        w = foldl' (<>) mempty (negPowers V.++ posPowers)
     in (fz, w)
 
 pcV
@@ -62,9 +64,9 @@ pcV SRS{..} maxm commitment z (v, w)
   where
     difference = -srsD + maxm
     hxi = if difference >= 0
-          then hPositiveX !! difference
-          else hNegativeX !! (abs difference - 1)
+          then hPositiveX V.! difference
+          else hNegativeX V.! (abs difference - 1)
     eA, eB, eC :: GT
-    eA = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
-    eB = reducedPairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX !! 0) -- when i = 0
+    eA = reducedPairing w (hPositiveAlphaX V.! 1) -- when i = 1
+    eB = reducedPairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX V.! 0) -- when i = 0
     eC = reducedPairing commitment hxi

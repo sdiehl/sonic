@@ -11,16 +11,8 @@ import qualified Curve.Weierstrass.BN254 as BN254 (Fr, PA)
 import qualified Curve.Weierstrass.BN254T as BN254T (PA)
 import qualified Group.Field.BN254TF as BN254TF (P)
 
--------------------------------------------------------------------------------
--- Galois fields
--------------------------------------------------------------------------------
-
 -- | Prime field @Fr@.
 type Fr = BN254.Fr
-
--------------------------------------------------------------------------------
--- Elliptic curves
--------------------------------------------------------------------------------
 
 -- | G1 is @E(Fq)@ defined by @y^2 = x^3 + b@.
 type G1 = BN254.PA

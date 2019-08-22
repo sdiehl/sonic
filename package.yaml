@@ -1,25 +1,23 @@
-name:                sonic
-version:             0.2.0
-github:              "adjoint-io/sonic"
-license:             MIT
-maintainer:          "Adjoint Inc (info@adjoint.io)"
-category:            Cryptography
-
-extra-source-files:
-- README.md
-- ChangeLog.md
-
-description:         Please see the README on GitHub at <https://github.com/adjoint-io/sonic#readme>
+name:        sonic
+version:     0.1.0
+synopsis:    Sonic
+description: Please see the README on GitHub at <https://github.com/adjoint-io/sonic#readme>
+maintainer:  Adjoint Inc (info@adjoint.io)
+license:     MIT
+github:      "adjoint-io/sonic"
+category:    Cryptography
 
 dependencies:
-- base
-- galois-field
-- elliptic-curve
-- pairing
-- protolude
-- bulletproofs
-- polynomial
-- MonadRandom
+  - base
+  - protolude
+  - bulletproofs
+  - elliptic-curve
+  - galois-field
+  - MonadRandom
+  - pairing
+  - poly
+  - semirings
+  - vector
 
 default-extensions:
   - LambdaCase
@@ -30,6 +28,10 @@ default-extensions:
   - FlexibleContexts
   - ScopedTypeVariables
   - RankNTypes
+
+extra-source-files:
+  - README.md
+  - ChangeLog.md
 
 ghc-options:
   -Wall
@@ -45,36 +47,20 @@ ghc-options:
   -Wno-incomplete-patterns
 
 library:
-  source-dirs: src
   exposed-modules:
-  - Sonic.CommitmentScheme
-  - Sonic.Constraints
-  - Sonic.Protocol
-  - Sonic.SRS
-  - Sonic.Signature
-  - Sonic.Utils
-  - Sonic.Curve
+    - Sonic.CommitmentScheme
+    - Sonic.Constraints
+    - Sonic.Curve
+    - Sonic.Protocol
+    - Sonic.SRS
+    - Sonic.Signature
+    - Sonic.Utils
+  source-dirs:
+    - src
 
-executables:
-  sonic-example:
-    main: Main.hs
-    source-dirs:
-      - examples
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - sonic
-    - tasty
-    - tasty-discover
-    - tasty-hunit
-    - tasty-quickcheck
-    - QuickCheck
 tests:
   sonic-test:
-    main: Main.hs
-    source-dirs: test
+    main: Main
     dependencies:
       - sonic
       - tasty
@@ -82,3 +68,22 @@ tests:
       - tasty-hunit
       - tasty-quickcheck
       - QuickCheck
+    source-dirs:
+      - test
+
+executables:
+  sonic-example:
+    main: Main
+    dependencies:
+      - sonic
+      - tasty
+      - tasty-discover
+      - tasty-hunit
+      - tasty-quickcheck
+      - QuickCheck
+    ghc-options:
+      -threaded
+      -rtsopts
+      -with-rtsopts=-N
+    source-dirs:
+      - examples
