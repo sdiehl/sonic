@@ -4,15 +4,15 @@ synopsis:    Sonic
 description: Please see the README on GitHub at <https://github.com/adjoint-io/sonic#readme>
 maintainer:  Adjoint Inc (info@adjoint.io)
 license:     MIT
-github:      "adjoint-io/sonic"
+github:      adjoint-io/sonic
 category:    Cryptography
 
 dependencies:
-  - base
+  - base >= 4.7 && < 5
   - protolude
   - bulletproofs
-  - elliptic-curve
-  - galois-field
+  - elliptic-curve >= 0.2 && < 0.3
+  - galois-field >= 0.4 && < 0.5
   - MonadRandom
   - pairing
   - poly

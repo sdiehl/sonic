@@ -13,10 +13,10 @@ import GaloisField (GaloisField(..))
 type BiVPoly k = VPoly (VPoly k)
 
 evalX :: GaloisField k => k -> BiVPoly k -> VPoly k
-evalX = (. unPoly) . (sum .) . (<$>) . uncurry . (. fromIntegral) . (scale 0 .) . pow
+evalX x = sum . (<$>) (uncurry (scale 0 . pow x . fromIntegral)) . unPoly
 
 evalY :: GaloisField k => k -> BiVPoly k -> VPoly k
-evalY = (. unPoly) . (toPoly .) . (<$>) . (<$>) . flip eval
+evalY x = toPoly . ((<$>) . (<$>) . flip eval) x . unPoly
 
 fromX :: GaloisField k => VPoly k -> BiVPoly k
 fromX = toPoly . ((<$>) . (<$>) . monomial) 0 . unPoly
