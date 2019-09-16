@@ -30,9 +30,9 @@ sonicProtocol circuit assignment x = do
   -- Verifier
   pure $ verify srs circuit proof y z ys
   where
-    -- n: Number of multiplication constraints
+    -- Number of multiplication constraints
     n = length $ aL assignment
-    -- 'd' should be large enough to support the circuit depth 'n'
+    -- Note that 'd' should be large enough to support the circuit depth 'n'
     randomD n = getRandomR (7 * n, 100 * n)
 ```
 
@@ -42,7 +42,8 @@ multiplication constraints:
 ```haskell
 runExample :: IO ()
 runExample = do
-  RandomParams {pX, pZ} <- lift randomParams
+  pX <- rnd
+  pZ <- rnd
   let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample pX pZ
   success <- sonicProtocol arithCircuit assignment pX
   putText $ "Success: " <> show success
