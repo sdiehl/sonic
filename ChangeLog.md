@@ -1,5 +1,9 @@
 # Changelog for sonic
 
+## 0.2.1
+
+* Use BLS12-381 elliptic curve
+
 ## 0.2
 
 * Fix leak: Prover should not receive `x` and `g^{\alpha}` should not be shared.

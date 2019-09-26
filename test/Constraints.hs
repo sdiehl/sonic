@@ -6,13 +6,13 @@ import Data.List ((!!))
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 import Control.Monad.Random (MonadRandom)
-import GaloisField(GaloisField(rnd))
+import Data.Field.Galois(rnd)
 import Bulletproofs.ArithmeticCircuit
 import Math.Polynomial.Laurent
 
 import Sonic.Utils
 import Sonic.Constraints
-import Sonic.Curve
+import Data.Pairing.BLS12381
 import Reference
 
 -- a·uq + b·vq + c·wq = kq

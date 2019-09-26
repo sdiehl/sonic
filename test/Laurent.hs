@@ -6,7 +6,7 @@ import Test.Tasty
 import Test.Tasty.QuickCheck
 import Math.Polynomial.Laurent
 
-import Sonic.Curve (Fr)
+import Data.Pairing.BLS12381 (Fr)
 import Sonic.Utils
 
 instance (Num a, Eq a, Arbitrary a) => Arbitrary (Laurent a) where

@@ -9,26 +9,26 @@ module Sonic.Protocol
 
 import Protolude hiding (head)
 import Data.List (head)
+import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Math.Polynomial.Laurent (newLaurent, evalLaurent)
-import GaloisField (GaloisField(rnd))
+import Data.Field.Galois (rnd)
 
 import Sonic.SRS (SRS(..))
 import Sonic.Constraints (rPoly, sPoly, tPoly, kPoly)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.Signature (HscProof(..), hscP, hscV)
 import Sonic.Utils (evalOnY)
-import Sonic.Curve (Fr, G1)
 
 data Proof f = Proof
-  { prR :: G1
-  , prT :: G1
+  { prR :: G1 BLS12381
+  , prT :: G1 BLS12381
   , prA :: f
-  , prWa :: G1
+  , prWa :: G1 BLS12381
   , prB :: f
-  , prWb :: G1
-  , prWt :: G1
+  , prWb :: G1 BLS12381
+  , prWt :: G1 BLS12381
   , prS :: f
   , prHscProof :: HscProof f
   }

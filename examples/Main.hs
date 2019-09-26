@@ -4,11 +4,11 @@ module Main where
 import Protolude
 import Control.Monad.Random (getRandomR)
 import Bulletproofs.ArithmeticCircuit
-import GaloisField(GaloisField(rnd))
+import Data.Pairing.BLS12381 (Fr)
+import Data.Field.Galois(rnd)
 
 import Sonic.SRS as SRS
 import Sonic.Protocol
-import Sonic.Curve (Fr)
 
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
 sonicProtocol circuit assignment x = do

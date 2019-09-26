@@ -7,7 +7,7 @@ import Test.Tasty
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 import Control.Monad.Random (MonadRandom)
-import GaloisField(GaloisField(rnd))
+import Data.Field.Galois(rnd)
 import Math.Polynomial.Laurent
 import Bulletproofs.ArithmeticCircuit
 
@@ -15,7 +15,7 @@ import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Utils
 import qualified Sonic.SRS as SRS
-import Sonic.Curve
+import Data.Pairing.BLS12381
 import Reference
 
 -- T ← Commit(bp,srs,d,t(X,y))
