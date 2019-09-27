@@ -3,9 +3,8 @@
 module Sonic.SRS where
 
 import Protolude
-import Data.Pairing (pairing)
 import Data.Curve (Curve(..), mul)
-import Data.Pairing.BLS12381 (Fr, G1, G2, GT, BLS12381)
+import Data.Pairing.BLS12381 (Fr, G1, G2, GT, BLS12381, pairing)
 
 data SRS = SRS
   { srsD :: Int

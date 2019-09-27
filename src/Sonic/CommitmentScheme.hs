@@ -10,8 +10,7 @@ module Sonic.CommitmentScheme
 import Protolude
 import Data.List ((!!))
 import Data.Curve (Curve(..), mul)
-import Data.Pairing.BLS12381 (Fr, G1, GT, BLS12381)
-import Data.Pairing (pairing)
+import Data.Pairing.BLS12381 (Fr, G1, GT, BLS12381, pairing)
 import Math.Polynomial.Laurent
   (Laurent, newLaurent, quotLaurent, evalLaurent, expLaurent, coeffsLaurent)
 import Sonic.SRS (SRS(..))

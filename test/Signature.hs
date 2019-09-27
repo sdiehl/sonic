@@ -7,7 +7,7 @@ import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), GateWeights(..), Assignment(..))
-import Data.Field.Galois(rnd)
+import Data.Field.Galois (rnd)
 
 import Sonic.Signature
 import qualified Sonic.SRS as SRS

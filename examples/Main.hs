@@ -5,7 +5,7 @@ import Protolude
 import Control.Monad.Random (getRandomR)
 import Bulletproofs.ArithmeticCircuit
 import Data.Pairing.BLS12381 (Fr)
-import Data.Field.Galois(rnd)
+import Data.Field.Galois (rnd)
 
 import Sonic.SRS as SRS
 import Sonic.Protocol

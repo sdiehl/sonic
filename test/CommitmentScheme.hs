@@ -7,7 +7,7 @@ import Test.Tasty
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 import Control.Monad.Random (MonadRandom)
-import Data.Field.Galois(rnd)
+import Data.Field.Galois (rnd)
 import Math.Polynomial.Laurent
 import Bulletproofs.ArithmeticCircuit
 

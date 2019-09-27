@@ -6,7 +6,7 @@ import Test.QuickCheck
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Math.Polynomial.Laurent
 import Control.Monad.Random (MonadRandom, getRandomR)
-import Data.Field.Galois(rnd)
+import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381 (Fr)
 
 data Coeffs f = Coeffs

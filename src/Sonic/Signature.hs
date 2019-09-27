@@ -8,16 +8,16 @@ module Sonic.Signature
   ) where
 
 import Protolude
-import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit (GateWeights(..))
-import Math.Polynomial.Laurent (evalLaurent)
+import Control.Monad.Random (MonadRandom)
 import Data.Field.Galois (rnd)
+import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
+import Math.Polynomial.Laurent (evalLaurent)
 
 import Sonic.Utils (evalOnX, evalOnY)
 import Sonic.Constraints (sPoly)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.SRS (SRS(..))
-import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 
 data HscProof f = HscProof
   { hscS :: [G1 BLS12381]
