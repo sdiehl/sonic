@@ -15,9 +15,9 @@ sonicProtocol circuit assignment x = do
   -- Setup for an SRS
   srs <- SRS.new <$> randomD n <*> pure x <*> rnd
   -- Prover
-  (proof, y, z, ys) <- prove srs assignment circuit
+  (proof, rndOracle@RndOracle{..}) <- prove srs assignment circuit
   -- Verifier
-  pure $ verify srs circuit proof y z ys
+  pure $ verify srs circuit proof rndOracleY rndOracleZ rndOracleYs
   where
     -- n: Number of multiplication constraints
     n = length $ aL assignment

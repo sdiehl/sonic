@@ -1,6 +1,8 @@
 -- The helper protocol for computing aggregated signatures of correct computation.
 
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Sonic.Signature
   ( HscProof(..)
   , hscP
@@ -27,7 +29,7 @@ data HscProof f = HscProof
   , hscC :: G1 BLS12381
   , hscU :: f
   , hscZ :: f
-  }
+  } deriving (Eq, Show, Generic, NFData)
 
 hscP
   :: (MonadRandom m)

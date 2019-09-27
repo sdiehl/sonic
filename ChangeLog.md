@@ -1,8 +1,10 @@
 # Changelog for sonic
 
-## 0.2.1
+## 0.3
 
 * Use BLS12-381 elliptic curve
+* Add `RndOracle` data type as part of the proving step
+* Add benchmarks
 
 ## 0.2
 

@@ -1,19 +1,19 @@
 {-# LANGUAGE TypeApplications #-}
-module Constraints where
+module Test.Constraints where
 
 import Protolude
+import Bulletproofs.ArithmeticCircuit
+import Control.Monad.Random (MonadRandom)
 import Data.List ((!!))
+import Data.Pairing.BLS12381
+import Data.Field.Galois (rnd)
+import Math.Polynomial.Laurent
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
-import Control.Monad.Random (MonadRandom)
-import Data.Field.Galois (rnd)
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial.Laurent
 
 import Sonic.Utils
 import Sonic.Constraints
-import Data.Pairing.BLS12381
-import Reference
+import Test.Reference
 
 -- a·uq + b·vq + c·wq = kq
 prop_linear_constraints :: Property

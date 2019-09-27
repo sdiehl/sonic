@@ -1,12 +1,12 @@
 {-# LANGUAGE TypeApplications, ScopedTypeVariables #-}
-module Laurent where
+module Test.Laurent where
 
 import Protolude
+import Data.Pairing.BLS12381 (Fr)
+import Math.Polynomial.Laurent
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import Math.Polynomial.Laurent
 
-import Data.Pairing.BLS12381 (Fr)
 import Sonic.Utils
 
 instance (Num a, Eq a, Arbitrary a) => Arbitrary (Laurent a) where

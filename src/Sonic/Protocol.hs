@@ -1,8 +1,11 @@
 -- The interactive Sonic protocol to check that the prover knows a valid assignment of the wires in the circuit
 
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Sonic.Protocol
   ( Proof
+  , RndOracle(..)
   , prove
   , verify
   ) where
@@ -31,14 +34,21 @@ data Proof f = Proof
   , prWt :: G1 BLS12381
   , prS :: f
   , prHscProof :: HscProof f
-  }
+  } deriving (Eq, Show, Generic, NFData)
+
+-- | Values created non-interactively in the random oracle model during proof generation
+data RndOracle f = RndOracle
+  { rndOracleY :: f
+  , rndOracleZ :: f
+  , rndOracleYs :: [f]
+  } deriving (Eq, Show, Generic, NFData)
 
 prove
   :: MonadRandom m
   => SRS
   -> Assignment Fr
   -> ArithCircuit Fr
-  -> m (Proof Fr, Fr, Fr, [Fr])
+  -> m (Proof Fr, RndOracle Fr)
 prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
   if srsD < 7*n
     then panic $ "Parameter d is not large enough: " <> show srsD <> " should be greater than " <>  show (7*n)
@@ -80,9 +90,11 @@ prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
            , prS = s
            , prHscProof = hscProof
            }
-         , y
-         , z
-         , ys
+         , RndOracle
+           { rndOracleY = y
+           , rndOracleZ = z
+           , rndOracleYs = ys
+           }
          )
   where
     n :: Int

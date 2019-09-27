@@ -72,12 +72,28 @@ executables:
     - QuickCheck
 tests:
   sonic-test:
-    main: Main.hs
+    main: Test.Main.hs
     source-dirs: test
     dependencies:
       - sonic
+      - QuickCheck
       - tasty
       - tasty-discover
       - tasty-hunit
       - tasty-quickcheck
+
+benchmarks:
+  sonic-benchmarks:
+    source-dirs:
+      - bench
+      - test
+    main: Main.hs
+    dependencies:
+      - sonic
+      - criterion
       - QuickCheck
+      - tasty
+      - tasty-quickcheck
+      - tasty-hunit
+    other-modules:
+      - Test.Reference
