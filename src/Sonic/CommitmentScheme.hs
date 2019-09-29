@@ -9,17 +9,15 @@ module Sonic.CommitmentScheme
 
 import Protolude
 import Data.List ((!!))
-import Pairing.Pairing (reducedPairing)
+import Data.Curve (Curve(..), mul)
+import Data.Pairing.BLS12381 (Fr, G1, GT, BLS12381, pairing)
 import Math.Polynomial.Laurent
   (Laurent, newLaurent, quotLaurent, evalLaurent, expLaurent, coeffsLaurent)
-import Curve (Curve(..), Group(..))
-
 import Sonic.SRS (SRS(..))
-import Sonic.Curve (Fr, G1, GT)
 
-type Opening f = (f, G1)
+type Opening f = (f, G1 BLS12381)
 
-commitPoly :: SRS -> Int -> Laurent Fr -> G1
+commitPoly :: SRS -> Int -> Laurent Fr -> G1 BLS12381
 commitPoly SRS{..} maxm fX
   = foldl' (<>) mempty (negPowers ++ posPowers)
   where
@@ -35,7 +33,7 @@ commitPoly SRS{..} maxm fX
     negPowers = zipWith mul gNegativeAlphaX (reverse negCoeffs)
     posPowers = zipWith mul gPositiveAlphaX posCoeffs
 
-openPoly :: SRS -> G1 -> Fr -> Laurent Fr -> Opening Fr
+openPoly :: SRS -> G1 BLS12381 -> Fr -> Laurent Fr -> Opening Fr
 openPoly SRS{..} _commitment z fX
   = let fz = evalLaurent fX z
         wPoly = (fX - newLaurent 0 [fz]) `quotLaurent` newLaurent 0 [-z, 1]
@@ -53,7 +51,7 @@ openPoly SRS{..} _commitment z fX
 pcV
   :: SRS
   -> Int
-  -> G1
+  -> G1 BLS12381
   -> Fr
   -> Opening Fr
   -> Bool
@@ -64,7 +62,7 @@ pcV SRS{..} maxm commitment z (v, w)
     hxi = if difference >= 0
           then hPositiveX !! difference
           else hNegativeX !! (abs difference - 1)
-    eA, eB, eC :: GT
-    eA = reducedPairing w (hPositiveAlphaX !! 1) -- when i = 1
-    eB = reducedPairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX !! 0) -- when i = 0
-    eC = reducedPairing commitment hxi
+    eA, eB, eC :: GT BLS12381
+    eA = pairing w (hPositiveAlphaX !! 1) -- when i = 1
+    eB = pairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX !! 0) -- when i = 0
+    eC = pairing commitment hxi

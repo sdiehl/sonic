@@ -10,11 +10,10 @@ module Sonic.Constraints
 
 import Protolude hiding (head)
 import Data.List (zipWith4, head, (!!))
+import Data.Pairing.BLS12381 (Fr)
 import Bulletproofs.ArithmeticCircuit (Assignment(..), GateWeights(..))
 import Math.Polynomial.Laurent
   (Laurent(..), newLaurent, zeroLaurent, expLaurent)
-
-import Sonic.Curve (Fr)
 import Sonic.Utils (BiVariateLaurent, convertToTwoVariateX, convertToTwoVariateY, evalOnY)
 
 rPoly

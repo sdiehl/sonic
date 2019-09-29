@@ -1,14 +1,13 @@
 {-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
-module Reference where
+module Test.Reference where
 
 import Protolude
-import Test.QuickCheck
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
-import Math.Polynomial.Laurent
 import Control.Monad.Random (MonadRandom, getRandomR)
-import GaloisField(GaloisField(rnd))
-
-import Sonic.Curve (Fr)
+import Data.Field.Galois (rnd)
+import Data.Pairing.BLS12381 (Fr)
+import Math.Polynomial.Laurent
+import Test.QuickCheck
 
 data Coeffs f = Coeffs
   { negCoeffs :: [f]

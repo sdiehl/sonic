@@ -1,22 +1,22 @@
 {-# LANGUAGE RecordWildCards #-}
-module CommitmentScheme where
+module Test.CommitmentScheme where
 
 import Protolude
 
+import Bulletproofs.ArithmeticCircuit
+import Control.Monad.Random (MonadRandom)
+import Data.Field.Galois (rnd)
+import Data.Pairing.BLS12381
+import Math.Polynomial.Laurent
 import Test.Tasty
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
-import Control.Monad.Random (MonadRandom)
-import GaloisField(GaloisField(rnd))
-import Math.Polynomial.Laurent
-import Bulletproofs.ArithmeticCircuit
 
 import Sonic.Constraints
 import Sonic.CommitmentScheme
 import Sonic.Utils
 import qualified Sonic.SRS as SRS
-import Sonic.Curve
-import Reference
+import Test.Reference
 
 -- T ← Commit(bp,srs,d,t(X,y))
 -- (t=t(z,y),Wt) ← Open(T,z,t(X,y)))

@@ -20,7 +20,7 @@ the two-variate polynomial equation used in
 
 The Sonic protocol can be outlined in three steps: Setup, Prover and
 Verifier. Due to the universality property of the SRS, the setup phase needs
-only to be run once.
+only to be run once. This implementation uses BLS12-381 elliptic curve.
 
 ```haskell
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool

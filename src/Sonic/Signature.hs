@@ -1,6 +1,8 @@
 -- The helper protocol for computing aggregated signatures of correct computation.
 
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Sonic.Signature
   ( HscProof(..)
   , hscP
@@ -8,26 +10,26 @@ module Sonic.Signature
   ) where
 
 import Protolude
-import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit (GateWeights(..))
+import Control.Monad.Random (MonadRandom)
+import Data.Field.Galois (rnd)
+import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 import Math.Polynomial.Laurent (evalLaurent)
-import GaloisField (GaloisField(rnd))
 
 import Sonic.Utils (evalOnX, evalOnY)
 import Sonic.Constraints (sPoly)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.SRS (SRS(..))
-import Sonic.Curve (Fr, G1)
 
 data HscProof f = HscProof
-  { hscS :: [G1]
-  , hscW :: [(f, G1)]
-  , hscQ :: [(f, G1)]
-  , hscQz :: G1
-  , hscC :: G1
+  { hscS :: [G1 BLS12381]
+  , hscW :: [(f, G1 BLS12381)]
+  , hscQ :: [(f, G1 BLS12381)]
+  , hscQz :: G1 BLS12381
+  , hscC :: G1 BLS12381
   , hscU :: f
   , hscZ :: f
-  }
+  } deriving (Eq, Show, Generic, NFData)
 
 hscP
   :: (MonadRandom m)

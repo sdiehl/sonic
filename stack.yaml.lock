@@ -5,47 +5,75 @@
 
 packages:
 - completed:
-    hackage: bulletproofs-1.0.1@sha256:63ff6bbe84c45b8d5d2027c58f7e00ee30b38046a6672b21c721f7288dd8bb0e,3250
+    hackage: poly-0.3.2.0@sha256:2cba686238c5074d551a56375f441b18745fbc465cdc3e0acf1701ae928f3ae9,1918
     pantry-tree:
-      size: 1971
-      sha256: 6777039924e7c569a80ab15bd6d5a54d586e839af88bc028ebec80e14633975e
+      size: 1451
+      sha256: 0a08b17044344cfa9923aefddad623987d12ed2d25738f5acb46f2ec71f8610d
   original:
-    hackage: bulletproofs-1.0.1
+    hackage: poly-0.3.2.0
 - completed:
-    hackage: galois-field-0.4.0@sha256:7f8aed0c11f6afc720685c2ede6bdbea3ce8dbd738dacd8fbf722168863d4dd1,3190
+    hackage: semirings-0.5.1@sha256:597e4070dcb75c3e347566114e140ba343843f80f3e16a456bb2e9e9d1d09430,3743
     pantry-tree:
-      size: 1130
-      sha256: e68a2fb1731fc4cdf5f0ae4dd718f8bd2e128eb6285be3d602a209e5430812ba
+      size: 610
+      sha256: cc4e01176f1a56c97dc923416a6939dcdc004584cccf8a2b1c67bd156b31179a
   original:
-    hackage: galois-field-0.4.0
+    hackage: semirings-0.5.1
 - completed:
-    hackage: poly-0.3.1.0@sha256:3e015e84d304c4197a2cff4a78400ed619eb850922d566028edb6c7254f2095f,1875
+    cabal-file:
+      size: 3910
+      sha256: 2c5acb600e2b184325e013859768c37f8171dd73ef74a0e75d7bf214a79515a9
+    name: bulletproofs
+    version: 1.0.1
+    git: https://github.com/adjoint-io/bulletproofs.git
     pantry-tree:
-      size: 1466
-      sha256: ee6b1de208cdd7a621e3138fe3507f4a97d26ce3c47fe20021c1de75d3fddf29
+      size: 2129
+      sha256: 0e8899d62afde34ac020299f5f3c21039f24de3e967d3e3e97935d83d9220a38
+    commit: 2a0c90ad8d39e25135bf46573206a6d9f9a36283
   original:
-    hackage: poly-0.3.1.0
+    git: https://github.com/adjoint-io/bulletproofs.git
+    commit: 2a0c90ad8d39e25135bf46573206a6d9f9a36283
 - completed:
-    hackage: semirings-0.4.2@sha256:7803a3bd8add49c375da59d456b59e32ea02a88ac1a1d71132420e4c976333f3,3750
+    cabal-file:
+      size: 7087
+      sha256: deafbe6832c9482bfd523a0312d60b8f4e85a560fa3553782b1eb0e5e10fee4d
+    name: elliptic-curve
+    version: 0.3.0
+    git: https://github.com/adjoint-io/elliptic-curve.git
     pantry-tree:
-      size: 555
-      sha256: dcf5c467c4005b567d409c3fe74aa233a6a9313a3693716eeee9ddafbd953f87
+      size: 9876
+      sha256: 26eb3e8b7affee1ca290328ab9fd03d2c01302e61f24270045d364f5d13088c8
+    commit: 118d3af0e8d01f21408312b8b5e059e50a20b4d8
   original:
-    hackage: semirings-0.4.2
+    git: https://github.com/adjoint-io/elliptic-curve.git
+    commit: 118d3af0e8d01f21408312b8b5e059e50a20b4d8
 - completed:
-    hackage: pairing-0.5.0@sha256:91bfb2d024a8c2634be59e4fe89d0d760c6bfb29610f9e80406b60428c9d716b,3832
+    cabal-file:
+      size: 3470
+      sha256: d44007898c07a6c913a38f78e7246c7785ae3052ca55ad713783345d06a28419
+    name: galois-field
+    version: 1.0.0
+    git: https://github.com/adjoint-io/galois-field.git
     pantry-tree:
-      size: 1165
-      sha256: 7aa7d03a5e9916cb92905a643e2f36048e25f4792b307ef7075e44f9dd7ce54d
+      size: 1783
+      sha256: ce94632e8a79a52febe5d04d5405efc8a759855fb5946f4b7187adefc6a2a4aa
+    commit: ea6a4f59fe84c24ccbf3cc91da0310385c2aa7b6
   original:
-    hackage: pairing-0.5.0
+    git: https://github.com/adjoint-io/galois-field.git
+    commit: ea6a4f59fe84c24ccbf3cc91da0310385c2aa7b6
 - completed:
-    hackage: elliptic-curve-0.2.2@sha256:f77334e9a9e857ddf231bbb7547ebb931d803558a5471614e1d2c6e2e90bc487,11928
+    cabal-file:
+      size: 3608
+      sha256: c4ff87a57b65606379b88c64da96c1581eeca4114254d801591b23e632729deb
+    name: pairing
+    version: 0.5.0
+    git: https://github.com/adjoint-io/pairing.git
     pantry-tree:
-      size: 9071
-      sha256: 70783c3c93699ce6da7ca3bd0df694942022f71823c89556b87e28fa087cff17
+      size: 2145
+      sha256: e05453a35d17e138f1937d716427c9c4f46bc7ad5cea69ed67c71327e6177c60
+    commit: 3104789b7fa4716d84f143772206d6b4ac3917d3
   original:
-    hackage: elliptic-curve-0.2.2
+    git: https://github.com/adjoint-io/pairing.git
+    commit: 3104789b7fa4716d84f143772206d6b4ac3917d3
 - completed:
     cabal-file:
       size: 2686
