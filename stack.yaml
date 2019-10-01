@@ -7,7 +7,6 @@ extra-deps:
   - pairing-1.0.0
   - poly-0.3.2.0
   - semirings-0.5.1
-  - git: https://github.com/adjoint-io/bulletproofs.git
-    commit: 039731993c3d0f78b938ca85bb6ada1cf312eee0
+  - bulletproofs-1.1.0
   - git: https://github.com/adjoint-io/polynomial.git
     commit: 7478e09d90f5d256d1afca49eda166a199f54cac

@@ -5,6 +5,27 @@
 
 packages:
 - completed:
+    hackage: elliptic-curve-0.3.0@sha256:7d314ff56011de62370bdd1b840866d1e5ce061972e54be673f5768cbf8d3d42,7072
+    pantry-tree:
+      size: 9500
+      sha256: 650191792bfc8b119e8a0ab1103383ddfa395ed692573519c27cc3d198089cb5
+  original:
+    hackage: elliptic-curve-0.3.0
+- completed:
+    hackage: galois-field-1.0.0@sha256:d44007898c07a6c913a38f78e7246c7785ae3052ca55ad713783345d06a28419,3470
+    pantry-tree:
+      size: 1444
+      sha256: 1b265e1c3062a06a48a535c1681a954c26bee5959a42e97fc0e4fd8b5a90849f
+  original:
+    hackage: galois-field-1.0.0
+- completed:
+    hackage: pairing-1.0.0@sha256:709d2e1a98b18327d2fba4efaa6069ef783333c95055ad73416e9401d02000ac,3507
+    pantry-tree:
+      size: 1693
+      sha256: 25c968cec9049b268af6445dd42465fa49b4c294dbe10207b72d9f301c76ea5e
+  original:
+    hackage: pairing-1.0.0
+- completed:
     hackage: poly-0.3.2.0@sha256:2cba686238c5074d551a56375f441b18745fbc465cdc3e0acf1701ae928f3ae9,1918
     pantry-tree:
       size: 1451
@@ -19,61 +40,12 @@ packages:
   original:
     hackage: semirings-0.5.1
 - completed:
-    cabal-file:
-      size: 3910
-      sha256: 2c5acb600e2b184325e013859768c37f8171dd73ef74a0e75d7bf214a79515a9
-    name: bulletproofs
-    version: 1.0.1
-    git: https://github.com/adjoint-io/bulletproofs.git
+    hackage: bulletproofs-1.1.0@sha256:866a6543e13fd0ba7b237140ee4fa9cf54eb00ee077472f33acb3490d13f7835,5127
     pantry-tree:
-      size: 2129
-      sha256: 0e8899d62afde34ac020299f5f3c21039f24de3e967d3e3e97935d83d9220a38
-    commit: 2a0c90ad8d39e25135bf46573206a6d9f9a36283
+      size: 2191
+      sha256: 90f49d9073b529790645f00c6db1eb2939b33e380bca21d0f030da1027a192f5
   original:
-    git: https://github.com/adjoint-io/bulletproofs.git
-    commit: 2a0c90ad8d39e25135bf46573206a6d9f9a36283
-- completed:
-    cabal-file:
-      size: 7087
-      sha256: deafbe6832c9482bfd523a0312d60b8f4e85a560fa3553782b1eb0e5e10fee4d
-    name: elliptic-curve
-    version: 0.3.0
-    git: https://github.com/adjoint-io/elliptic-curve.git
-    pantry-tree:
-      size: 9876
-      sha256: 26eb3e8b7affee1ca290328ab9fd03d2c01302e61f24270045d364f5d13088c8
-    commit: 118d3af0e8d01f21408312b8b5e059e50a20b4d8
-  original:
-    git: https://github.com/adjoint-io/elliptic-curve.git
-    commit: 118d3af0e8d01f21408312b8b5e059e50a20b4d8
-- completed:
-    cabal-file:
-      size: 3470
-      sha256: d44007898c07a6c913a38f78e7246c7785ae3052ca55ad713783345d06a28419
-    name: galois-field
-    version: 1.0.0
-    git: https://github.com/adjoint-io/galois-field.git
-    pantry-tree:
-      size: 1783
-      sha256: ce94632e8a79a52febe5d04d5405efc8a759855fb5946f4b7187adefc6a2a4aa
-    commit: ea6a4f59fe84c24ccbf3cc91da0310385c2aa7b6
-  original:
-    git: https://github.com/adjoint-io/galois-field.git
-    commit: ea6a4f59fe84c24ccbf3cc91da0310385c2aa7b6
-- completed:
-    cabal-file:
-      size: 3608
-      sha256: c4ff87a57b65606379b88c64da96c1581eeca4114254d801591b23e632729deb
-    name: pairing
-    version: 0.5.0
-    git: https://github.com/adjoint-io/pairing.git
-    pantry-tree:
-      size: 2145
-      sha256: e05453a35d17e138f1937d716427c9c4f46bc7ad5cea69ed67c71327e6177c60
-    commit: 3104789b7fa4716d84f143772206d6b4ac3917d3
-  original:
-    git: https://github.com/adjoint-io/pairing.git
-    commit: 3104789b7fa4716d84f143772206d6b4ac3917d3
+    hackage: bulletproofs-1.1.0
 - completed:
     cabal-file:
       size: 2686
