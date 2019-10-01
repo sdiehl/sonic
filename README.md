@@ -1,5 +1,7 @@
 <p align="center">
-  <a href="http://www.adjoint.io"><img src="https://www.adjoint.io/assets/img/adjoint-logo@2x.png" width="250"/></a>
+<a href="https://www.adjoint.io">
+  <img width="250" src="./.assets/adjoint.png" alt="Adjoint Logo" />
+</a>
 </p>
 
 [Sonic](https://eprint.iacr.org/2019/099.pdf) [1] is a zk-SNARK protocol for general
@@ -18,7 +20,7 @@ the two-variate polynomial equation used in
 
 The Sonic protocol can be outlined in three steps: Setup, Prover and
 Verifier. Due to the universality property of the SRS, the setup phase needs
-only to be run once.
+only to be run once. This implementation uses BLS12-381 elliptic curve.
 
 ```haskell
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
@@ -30,9 +32,9 @@ sonicProtocol circuit assignment x = do
   -- Verifier
   pure $ verify srs circuit proof y z ys
   where
-    -- n: Number of multiplication constraints
+    -- Number of multiplication constraints
     n = length $ aL assignment
-    -- 'd' should be large enough to support the circuit depth 'n'
+    -- Note that 'd' should be large enough to support the circuit depth 'n'
     randomD n = getRandomR (7 * n, 100 * n)
 ```
 
@@ -42,7 +44,8 @@ multiplication constraints:
 ```haskell
 runExample :: IO ()
 runExample = do
-  RandomParams {pX, pZ} <- lift randomParams
+  pX <- rnd
+  pZ <- rnd
   let (arithCircuit, assignment@Assignment{..}) = arithCircuitExample pX pZ
   success <- sonicProtocol arithCircuit assignment pX
   putText $ "Success: " <> show success

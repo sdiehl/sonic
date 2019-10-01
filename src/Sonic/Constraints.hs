@@ -1,6 +1,7 @@
 -- Constraint system proposed by Bootle et al.
 
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 module Sonic.Constraints
   ( rPoly
   , sPoly
@@ -9,63 +10,57 @@ module Sonic.Constraints
   ) where
 
 import Protolude hiding (head)
-import Data.List (zipWith4, head, (!!))
 import Bulletproofs.ArithmeticCircuit (Assignment(..), GateWeights(..))
-import Math.Polynomial.Laurent
-  (Laurent(..), newLaurent, zeroLaurent, expLaurent)
+import Data.List (zipWith4, head, (!!))
+import Data.Pairing.BLS12381 (Fr)
+import Data.Poly.Laurent (VPoly, eval, scale, monomial, toPoly, unPoly, unPoly)
+import qualified Data.Vector as V
 
-import Sonic.Curve (Fr)
-import Sonic.Utils (BiVariateLaurent, convertToTwoVariateX, convertToTwoVariateY, evalOnY)
+import Sonic.Utils (BiVPoly, fromX, fromY, evalY)
 
 rPoly
   :: (Eq f, Num f)
   => Assignment f
-  -> BiVariateLaurent f
+  -> BiVPoly f
 rPoly Assignment{..} =
-  newLaurent
-    (negate (2 * n))
-    (reorder $ newLaurent 0 [] : concat (zipWith4 f aL aR aO [1..]))
+  scale (negate (2 * n)) 1 (toPoly . V.fromList $ concat (zipWith4 f aL aR aO [1..]))
   where
-    f ai bi ci i = [Laurent i [ai], Laurent (-i) [bi], Laurent (-i - n) [ci]]
-    reorder = sortBy (\l1 l2 -> compare (expLaurent l1) (expLaurent l2))
+    f ai bi ci i = [(i, monomial 0 ai), (-i, monomial 0 bi), (-i - n, monomial 0 ci)]
     n = length aL
 
 sPoly
   :: forall f. (Eq f, Num f)
   => GateWeights f
-  -> BiVariateLaurent f
+  -> BiVPoly f
 sPoly GateWeights{..}
-  = foldl'
-    (\acc i -> acc
-      + newLaurent (-i) [uiY i]
-      + newLaurent i [viY i]
-      + newLaurent (i + n) [wiY i]
-    ) zeroLaurent [1..n]
+  = toPoly . V.fromList . concat $
+    (\i -> [(-i, uiY i), (i, viY i), (i + n, wiY i)]) <$> [1..n]
   where
-    uiY, viY, wiY :: Int -> Laurent f
+    uiY, viY, wiY :: Int -> VPoly f
     uiY i = xiY i wL
     viY i = xiY i wR
-    wiY i = newLaurent (-i) [-1] + newLaurent i [-1] + xiY i wO
+    wiY i = monomial (-i) (-1) + monomial i (-1) + xiY i wO
 
-    xiY :: Int -> [[f]] -> Laurent f
-    xiY i xL =  foldl' (fxqi i) zeroLaurent (zip [1..] xL)
-    fxqi i acc (q, xLq) = acc + newLaurent (q + n) [xLq !! (i - 1)]
+    xiY :: Int -> [[f]] -> VPoly f
+    xiY i xL =  foldl' (fxqi i) 0 (zip [1..] xL)
+    fxqi i acc (q, xLq) = acc + monomial (q + n) (xLq !! (i - 1))
 
     -- n: multiplication constraints
+    n :: Int
     n = length $ head wL
 
 tPoly
-  :: BiVariateLaurent Fr
-  -> BiVariateLaurent Fr
-  -> Laurent Fr
-  -> BiVariateLaurent Fr
+  :: BiVPoly Fr
+  -> BiVPoly Fr
+  -> VPoly Fr
+  -> BiVPoly Fr
 tPoly rXY sXY kY
   -- r(X, 1) * (r(X,Y) + s(X, Y)) - k(Y)
   = (rX1 * rXY') + k1Y
   where
     rXY' = rXY + sXY
-    rX1 = convertToTwoVariateX $ evalOnY 1 rXY
-    k1Y = convertToTwoVariateY $ negate kY
+    rX1 = fromX $ evalY 1 rXY
+    k1Y = fromY $ negate kY
 
-kPoly :: [Fr] -> Int -> Laurent Fr
-kPoly k n = newLaurent (n+1) k
+kPoly :: [Fr] -> Int -> VPoly Fr
+kPoly k n = toPoly . V.fromList $ zip [n+1..] k

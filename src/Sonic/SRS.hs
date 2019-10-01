@@ -3,24 +3,22 @@
 module Sonic.SRS where
 
 import Protolude
-import Curve (Curve(..), Group(..))
 import qualified Data.Vector as V
-import GaloisField (pow)
-import Pairing.Pairing (reducedPairing)
-
-import Sonic.Curve (Fr, G1, G2, GT)
+import Data.Field.Galois (pow)
+import Data.Curve (Curve(..), mul)
+import Data.Pairing.BLS12381 (Fr, G1, G2, GT, BLS12381, pairing)
 
 data SRS = SRS
   { srsD :: Int
-  , gNegativeX :: V.Vector G1
-  , gPositiveX :: V.Vector G1
-  , hNegativeX :: V.Vector G2
-  , hPositiveX :: V.Vector G2
-  , gNegativeAlphaX :: V.Vector G1
-  , gPositiveAlphaX :: V.Vector G1
-  , hNegativeAlphaX :: V.Vector G2
-  , hPositiveAlphaX :: V.Vector G2
-  , srsPairing :: GT
+  , gNegativeX :: V.Vector (G1 BLS12381)
+  , gPositiveX :: V.Vector (G1 BLS12381)
+  , hNegativeX :: V.Vector (G2 BLS12381)
+  , hPositiveX :: V.Vector (G2 BLS12381)
+  , gNegativeAlphaX :: V.Vector (G1 BLS12381)
+  , gPositiveAlphaX :: V.Vector (G1 BLS12381)
+  , hNegativeAlphaX :: V.Vector (G2 BLS12381)
+  , hPositiveAlphaX :: V.Vector (G2 BLS12381)
+  , srsPairing :: GT BLS12381
   }
 
 -- | Create a new Structured Reference String (SRS)
@@ -41,5 +39,5 @@ new n x alpha
         , gPositiveAlphaX = V.cons (mul gen 0) (mul gen . (*) alpha . pow x <$> V.fromList [1..d])
         , hNegativeAlphaX = mul gen . (*) alpha . pow xInv <$> V.fromList [1..d]
         , hPositiveAlphaX = mul gen . (*) alpha . pow x <$> V.fromList [0..d]
-        , srsPairing = reducedPairing gen (mul gen alpha)
+        , srsPairing = pairing gen (mul gen alpha)
         }

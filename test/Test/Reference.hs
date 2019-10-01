@@ -1,14 +1,15 @@
-{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
-module Reference where
+{-# LANGUAGE RecordWildCards, NamedFieldPuns, OverloadedLists #-}
+module Test.Reference where
 
 import Protolude
-import Test.QuickCheck
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
-import Math.Polynomial.Laurent
 import Control.Monad.Random (MonadRandom, getRandomR)
-import GaloisField(GaloisField(rnd))
+import Data.Field.Galois (rnd)
+import Data.Pairing.BLS12381 (Fr)
+import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly)
+import qualified Data.Vector as V
 
-import Sonic.Curve (Fr)
+import Test.QuickCheck
 
 data Coeffs f = Coeffs
   { negCoeffs :: [f]
@@ -16,7 +17,7 @@ data Coeffs f = Coeffs
   , posCoeffs :: [f]
   }
 
-getCoeffs :: Laurent f -> Coeffs f
+getCoeffs :: VPoly f -> Coeffs f
 getCoeffs poly
   = if expL < 0
     then Coeffs
@@ -25,11 +26,11 @@ getCoeffs poly
          (drop ((abs expL) + 1) coeffsL)
     else Coeffs [] (head coeffsL) (drop 1 coeffsL)
   where
-    expL = expLaurent poly
-    coeffsL = coeffsLaurent poly
+    expL = fst (unPoly poly V.! 0)
+    coeffsL = V.toList $ snd <$> unPoly poly
 
-getZeroCoeff :: Laurent f -> Maybe f
-getZeroCoeff = zeroCoeff. getCoeffs
+getZeroCoeff :: VPoly f -> Maybe f
+getZeroCoeff = zeroCoeff . getCoeffs
 
 -------------
 -- Examples

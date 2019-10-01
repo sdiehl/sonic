@@ -2,12 +2,12 @@ resolver: lts-13.23
 packages:
   - .
 extra-deps:
-  - elliptic-curve-0.2.2
-  - pairing-0.5.0
-  - semirings-0.4.2
-  - git: https://github.com/adjoint-io/bulletproofs.git
-    commit: 9e79cb5939dec879baf5d8ac6e0a41e19f894b4b
-  - git: https://github.com/adjoint-io/galois-field.git
-    commit: 47e864bfc7249687ffce2512e61b1f003b50f62a
   - git: https://github.com/adjoint-io/poly.git
-    commit: 40470472f2a3f4383741f1553c5a0f4373610ea2
+    commit: e5b9ff009a77ad4549de5fbb4249f74db23ff26a
+  - elliptic-curve-0.3.0
+  - galois-field-1.0.0
+  - pairing-1.0.0
+#  - poly-0.3.2.0
+  - semirings-0.5.1
+  - git: https://github.com/adjoint-io/bulletproofs.git
+    commit: 42096d96e6c34ca2835881298efc0111930ae97b

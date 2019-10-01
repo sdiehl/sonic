@@ -11,8 +11,8 @@ dependencies:
   - base >= 4.7 && < 5
   - protolude
   - bulletproofs
-  - elliptic-curve >= 0.2 && < 0.3
-  - galois-field >= 0.4 && < 0.5
+  - elliptic-curve >= 0.3
+  - galois-field >= 1.0
   - MonadRandom
   - pairing
   - poly
@@ -33,24 +33,23 @@ extra-source-files:
   - README.md
   - ChangeLog.md
 
-ghc-options:
-  -Wall
-  -Werror
-  -Wcompat
-  -Wincomplete-record-updates
-  -Wredundant-constraints
-  -Wno-unused-matches
-  -Wno-name-shadowing
-  -Wno-type-defaults
-  -Wno-orphans
-  -Wno-incomplete-uni-patterns
-  -Wno-incomplete-patterns
+# ghc-options:
+#   -Wall
+#   -Werror
+#   -Wcompat
+#   -Wincomplete-record-updates
+#   -Wredundant-constraints
+#   -Wno-unused-matches
+#   -Wno-name-shadowing
+#   -Wno-type-defaults
+#   -Wno-orphans
+#   -Wno-incomplete-uni-patterns
+#   -Wno-incomplete-patterns
 
 library:
   exposed-modules:
     - Sonic.CommitmentScheme
     - Sonic.Constraints
-    - Sonic.Curve
     - Sonic.Protocol
     - Sonic.SRS
     - Sonic.Signature
@@ -60,16 +59,31 @@ library:
 
 tests:
   sonic-test:
-    main: Main
+    main: Main.hs
+    source-dirs: test
     dependencies:
       - sonic
+      - QuickCheck
       - tasty
       - tasty-discover
       - tasty-hunit
       - tasty-quickcheck
-      - QuickCheck
+
+benchmarks:
+  sonic-benchmarks:
     source-dirs:
+      - bench
       - test
+    main: Main.hs
+    dependencies:
+      - sonic
+      - criterion
+      - QuickCheck
+      - tasty
+      - tasty-quickcheck
+      - tasty-hunit
+    other-modules:
+      - Test.Reference
 
 executables:
   sonic-example:

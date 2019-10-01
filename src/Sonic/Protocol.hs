@@ -1,72 +1,84 @@
 -- The interactive Sonic protocol to check that the prover knows a valid assignment of the wires in the circuit
 
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Sonic.Protocol
   ( Proof
+  , RndOracle(..)
   , prove
   , verify
   ) where
 
 import Protolude hiding (head)
 import Data.List (head)
+import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
-import Math.Polynomial.Laurent (newLaurent, evalLaurent)
-import GaloisField (GaloisField(rnd))
+import Data.Field.Galois (rnd)
+import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly, scale)
+import qualified Data.Vector as V
 
 import Sonic.SRS (SRS(..))
 import Sonic.Constraints (rPoly, sPoly, tPoly, kPoly)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.Signature (HscProof(..), hscP, hscV)
-import Sonic.Utils (evalOnY)
-import Sonic.Curve (Fr, G1)
+import Sonic.Utils (evalY, BiVPoly)
 
 data Proof f = Proof
-  { prR :: G1
-  , prT :: G1
+  { prR :: G1 BLS12381
+  , prT :: G1 BLS12381
   , prA :: f
-  , prWa :: G1
+  , prWa :: G1 BLS12381
   , prB :: f
-  , prWb :: G1
-  , prWt :: G1
+  , prWb :: G1 BLS12381
+  , prWt :: G1 BLS12381
   , prS :: f
   , prHscProof :: HscProof f
-  }
+  } deriving (Eq, Show, Generic, NFData)
+
+-- | Values created non-interactively in the random oracle model during proof generation
+data RndOracle f = RndOracle
+  { rndOracleY :: f
+  , rndOracleZ :: f
+  , rndOracleYs :: [f]
+  } deriving (Eq, Show, Generic, NFData)
 
 prove
   :: MonadRandom m
   => SRS
   -> Assignment Fr
   -> ArithCircuit Fr
-  -> m (Proof Fr, Fr, Fr, [Fr])
+  -> m (Proof Fr, RndOracle Fr)
 prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
   if srsD < 7*n
     then panic $ "Parameter d is not large enough: " <> show srsD <> " should be greater than " <>  show (7*n)
     else do
     cns <- replicateM 4 rnd
     let rXY = rPoly assignment
-        sumcXY = newLaurent
-                 (negate (2 * n + 4))
-                 (reverse $ zipWith (\cni i -> newLaurent (negate (2 * n + i)) [cni]) cns [1..])
+        sumcXY :: BiVPoly Fr
+        sumcXY
+          = scale (negate (2 * n + 4)) 1
+          (toPoly . V.fromList $ (zipWith (\cni i -> (negate (2 * n + i), monomial 0 cni)) cns [1..]))
         polyR' = rXY + sumcXY
-        commitR = commitPoly srs (fromIntegral n) (evalOnY 1 polyR')
+        commitR = commitPoly srs (fromIntegral n) (evalY 1 polyR')
 
     -- zkV -> zkP: Send y to prover (Random oracle)
     y <- rnd
     let ky = kPoly cs n
     let sP = sPoly weights
     let tP = tPoly polyR' sP ky
-        tPY = evalOnY y tP
+        tPY = evalY y tP
 
     let commitT = commitPoly srs srsD tPY
 
     -- zkV -> zkP: Send y to prover (Random oracle)
     z <- rnd
-    let (a, wa) = openPoly srs commitR z (evalOnY 1 polyR')
-        (b, wb) = openPoly srs commitR (y * z) (evalOnY 1 polyR')
-        (_, wt) = openPoly srs commitT z (evalOnY y tP)
+    let (a, wa) = openPoly srs commitR z (evalY 1 polyR')
+        (b, wb) = openPoly srs commitR (y * z) (evalY 1 polyR')
+        (_, wt) = openPoly srs commitT z (evalY y tP)
 
-    let s = evalLaurent (evalOnY y sP) z
+    let s = eval (evalY y sP) z
     ys <- replicateM m rnd
     hscProof <- hscP srs weights ys
     pure ( Proof
@@ -80,9 +92,11 @@ prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
            , prS = s
            , prHscProof = hscProof
            }
-         , y
-         , z
-         , ys
+         , RndOracle
+           { rndOracleY = y
+           , rndOracleZ = z
+           , rndOracleYs = ys
+           }
          )
   where
     n :: Int
@@ -99,7 +113,7 @@ verify
   -> [Fr]
   -> Bool
 verify srs@SRS{..} ArithCircuit{..} Proof{..} y z ys
-  = let t = prA * (prB + prS) - evalLaurent ky y
+  = let t = prA * (prB + prS) - eval ky y
         checks = [ hscV srs ys weights prHscProof
                  , pcV srs (fromIntegral n) prR z (prA, prWa)
                  , pcV srs (fromIntegral n) prR (y * z) (prB, prWb)

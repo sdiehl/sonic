@@ -4,20 +4,20 @@ module Main where
 import Protolude
 import Control.Monad.Random (getRandomR)
 import Bulletproofs.ArithmeticCircuit
-import GaloisField(GaloisField(rnd))
+import Data.Pairing.BLS12381 (Fr)
+import Data.Field.Galois (rnd)
 
 import Sonic.SRS as SRS
 import Sonic.Protocol
-import Sonic.Curve (Fr)
 
 sonicProtocol :: ArithCircuit Fr -> Assignment Fr -> Fr -> IO Bool
 sonicProtocol circuit assignment x = do
   -- Setup for an SRS
   srs <- SRS.new <$> randomD n <*> pure x <*> rnd
   -- Prover
-  (proof, y, z, ys) <- prove srs assignment circuit
+  (proof, rndOracle@RndOracle{..}) <- prove srs assignment circuit
   -- Verifier
-  pure $ verify srs circuit proof y z ys
+  pure $ verify srs circuit proof rndOracleY rndOracleZ rndOracleYs
   where
     -- n: Number of multiplication constraints
     n = length $ aL assignment

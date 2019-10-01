@@ -1,19 +1,19 @@
 {-# LANGUAGE TypeApplications #-}
-module Constraints where
+module Test.Constraints where
 
 import Protolude
+import Bulletproofs.ArithmeticCircuit
+import Control.Monad.Random (MonadRandom)
+import Data.Field.Galois (rnd)
 import Data.List ((!!))
+import Data.Pairing.BLS12381
+import Data.Poly.Laurent (eval)
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
-import Control.Monad.Random (MonadRandom)
-import GaloisField(GaloisField(rnd))
-import Bulletproofs.ArithmeticCircuit
-import Math.Polynomial.Laurent
 
 import Sonic.Utils
 import Sonic.Constraints
-import Sonic.Curve
-import Reference
+import Test.Reference
 
 -- a·uq + b·vq + c·wq = kq
 prop_linear_constraints :: Property
@@ -31,7 +31,7 @@ prop_rPoly_prop :: Fr -> Fr -> Property
 prop_rPoly_prop x y = QCM.monadicIO $ do
   assignment <- lift $ generate $ arithAssignmentGen 3
   let rP = rPoly assignment
-  pure $ evalLaurent (evalOnY y rP) x === evalLaurent (evalOnY 1 rP) (x * y)
+  pure $ eval (evalY y rP) x === eval (evalY 1 rP) (x * y)
 
 -- Constant term in polynomial r[X, Y] is zero
 prop_rPoly_zero_constant :: Fr -> Fr -> Property
@@ -41,7 +41,7 @@ prop_rPoly_zero_constant x y = QCM.monadicIO $ do
   let aO = zipWith (*) aL aR
       rXY = rPoly @Fr (Assignment aL aR aO)
   r <- QCM.run rnd
-  pure $ case flip evalLaurent r <$> getZeroCoeff rXY of
+  pure $ case flip eval r <$> getZeroCoeff rXY of
            Nothing -> panic "Zero coeff does not exist"
            Just z -> z === 0
 
@@ -51,7 +51,7 @@ prop_sPoly_zero_constant x y = QCM.monadicIO $ do
   (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
   let sXY = sPoly weights
   r <- lift rnd
-  pure $ case flip evalLaurent r <$> getZeroCoeff sXY of
+  pure $ case flip eval r <$> getZeroCoeff sXY of
            Nothing -> panic "Zero coeff does not exist"
            Just (z :: Fr) -> z === 0
 
@@ -63,7 +63,7 @@ prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
       sXY = sPoly weights
       rXY' = rXY + sXY
   r <- lift rnd
-  pure $ case flip evalLaurent r <$> getZeroCoeff rXY' of
+  pure $ case flip eval r <$> getZeroCoeff rXY' of
            Nothing -> panic "Zero coeff does not exist"
            Just z -> z === 0
 
@@ -86,6 +86,6 @@ prop_tPoly_zero_constant = QCM.monadicIO $ do
           tP = tPoly rXY sXY kY
 
       r <- rnd
-      case flip evalLaurent r <$> getZeroCoeff tP of
+      case flip eval r <$> getZeroCoeff tP of
         Nothing -> panic "Zero coeff does not exist"
         Just z -> pure z

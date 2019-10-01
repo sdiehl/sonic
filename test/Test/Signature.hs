@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Signature where
+module Test.Signature where
 
 import Protolude
 import Test.Tasty
@@ -7,12 +7,12 @@ import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), GateWeights(..), Assignment(..))
-import GaloisField(GaloisField(rnd))
+import Data.Field.Galois (rnd)
 
 import Sonic.Signature
 import qualified Sonic.SRS as SRS
 
-import Reference
+import Test.Reference
 
 -- (s=s(z,y),sc) ← scP(info,s(X,Y),(z,y))
 -- check scV(info,s(X,Y),(z,y),(s,sc))
