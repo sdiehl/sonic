@@ -23,9 +23,9 @@ rPoly
   => Assignment f
   -> BiVPoly f
 rPoly Assignment{..} =
-  scale (negate (2 * n)) 1 (toPoly . V.fromList $ concat (zipWith4 f aL aR aO [1..]))
+  toPoly . V.fromList $ concat (zipWith4 f aL aR aO [1..])
   where
-    f ai bi ci i = [(i, monomial 0 ai), (-i, monomial 0 bi), (-i - n, monomial 0 ci)]
+    f ai bi ci i = [(i, monomial i ai), (-i, monomial (-1) bi), (-i - n, monomial (-i - n) ci)]
     n = length aL
 
 sPoly
