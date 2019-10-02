@@ -36,7 +36,7 @@ test_tXy_commit_scheme = localOption (QuickCheckTests 25) $
       let srs = SRS.new d pX pAlpha
           fX = evalY pY $ tPoly (rPoly assignment) (sPoly weights) (kPoly cs n)
           commitment = commitPoly srs d fX
-          opening = openPoly srs commitment pZ fX
+          opening = openPoly srs pZ fX
 
       QCM.assert $ pcV srs d commitment pZ opening
   where
@@ -73,7 +73,7 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 25) $
           sumcXY = scale (negate (2 * n + 4)) 1 (toPoly . V.fromList $ (zipWith (\cni i -> (negate (2 * n + i), monomial 0 cni)) cns [1..]))
           polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalY 1 polyR')
-          opening = openPoly srs commitment pZ (evalY 1 polyR')
+          opening = openPoly srs pZ (evalY 1 polyR')
 
       QCM.assert $ pcV srs n commitment pZ opening
 
@@ -97,6 +97,6 @@ test_rX1YZ_commit_scheme = localOption (QuickCheckTests 25) $
           sumcXY = scale (negate (2 * n + 4)) 1 (toPoly . V.fromList $ (zipWith (\cni i -> (negate (2 * n + i), monomial 0 cni)) cns [1..]))
           polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalY 1 polyR')
-          opening = openPoly srs commitment (pY * pZ) (evalY 1 polyR')
+          opening = openPoly srs (pY * pZ) (evalY 1 polyR')
 
       QCM.assert $ pcV srs n commitment (pY * pZ) opening

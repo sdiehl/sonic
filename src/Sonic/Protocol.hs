@@ -74,9 +74,9 @@ prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
 
     -- zkV -> zkP: Send y to prover (Random oracle)
     z <- rnd
-    let (a, wa) = openPoly srs commitR z (evalY 1 polyR')
-        (b, wb) = openPoly srs commitR (y * z) (evalY 1 polyR')
-        (_, wt) = openPoly srs commitT z (evalY y tP)
+    let (a, wa) = openPoly srs z (evalY 1 polyR')
+        (b, wb) = openPoly srs (y * z) (evalY 1 polyR')
+        (_, wt) = openPoly srs z (evalY y tP)
 
     let s = eval (evalY y sP) z
     ys <- replicateM m rnd

@@ -1,6 +1,4 @@
 -- Polynomial commitment scheme inspired by Kate et al.
-
-{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE RecordWildCards #-}
 module Sonic.CommitmentScheme
   ( commitPoly
@@ -18,53 +16,53 @@ import Sonic.SRS (SRS(..))
 
 type Opening f = (f, G1 BLS12381)
 
-commitPoly :: SRS -> Int -> VPoly Fr -> G1 BLS12381
+-- Commit(info, f(X)) -> F:
+commitPoly
+  :: SRS           -- srs
+  -> Int           -- max
+  -> VPoly Fr      -- f(X)
+  -> G1 BLS12381   -- F
 commitPoly SRS{..} maxm fX
-  = foldl' (<>) mempty (negPowers V.++ posPowers)
+  = foldl'
+    (\acc (e, v) -> acc <> if e >= 0
+                           then (gPositiveAlphaX V.! (e - 1)) `mul` v           -- {g^{alpha*X^{d-max}*f(X) : X<0}
+                           else (gNegativeAlphaX V.! (abs e - 1)) `mul` v       -- {g^{alpha*X^{d-max}*f(X) : X>0}
+    ) mempty xfX
   where
-    difference = srsD - maxm
-    powofx = monomial difference 1
-    xfX = unPoly (powofx * fX)
-    expL = fst (xfX V.! 0)
-    coeffsL = snd <$> xfX
-    (negCoeffs, posCoeffs)
-      = if expL < 0
-        then V.splitAt (abs expL) coeffsL
-        else ([], coeffsL)
-    negPowers = V.zipWith mul gNegativeAlphaX (V.reverse negCoeffs)
-    posPowers = V.zipWith mul gPositiveAlphaX posCoeffs
+    difference = srsD - maxm       -- d-max
+    powofx = monomial difference 1 -- X^{d-max}
+    xfX = unPoly (powofx * fX)     -- X^{d-max} * f(X)
 
-openPoly :: SRS -> G1 BLS12381 -> Fr -> VPoly Fr -> Opening Fr
-openPoly SRS{..} _commitment z fX
-  = let fz = eval fX z
-        wPoly = fX - monomial 0 fz `quot` toPoly [(0, -z), (1, 1)]
-        poly = unPoly wPoly
-        expL = fst (poly V.! 0)
-        coeffsL = snd <$> poly
-        (negCoeffs, posCoeffs)
-          = if expL < 0
-            then V.splitAt (abs expL) coeffsL
-            else V.splitAt 0 coeffsL
-        negPowers = V.zipWith mul gNegativeX (V.reverse negCoeffs)
-        posPowers = V.zipWith mul gPositiveX posCoeffs
-        w = foldl' (<>) mempty (negPowers V.++ posPowers)
-    in (fz, w)
+openPoly
+  :: SRS          -- srs
+  -> Fr           -- z
+  -> VPoly Fr     -- f(X)
+  -> Opening Fr   -- (f(z), W)
+openPoly SRS{..} z fX = (fz, w)
+  where
+    fz = eval fX z -- f(z)
+    wPoly = unPoly $ (fX - monomial 0 fz) `quot` toPoly (V.fromList [(0, -z), (1, 1)]) -- w(X) = (f(X) - f(z))/(X-z)
+    w = foldl'
+        (\acc (e, v) -> acc <> if e >= 0
+                               then (gPositiveX V.! e) `mul` v           -- {g^{w(X)} : X>0}
+                               else (gNegativeX V.! (abs e - 1)) `mul` v -- {g^{w(X)} : X<0}
+        ) mempty wPoly
 
 pcV
-  :: SRS
-  -> Int
-  -> G1 BLS12381
-  -> Fr
-  -> Opening Fr
-  -> Bool
+  :: SRS          -- srs
+  -> Int          -- max
+  -> G1 BLS12381  -- F
+  -> Fr           -- z
+  -> Opening Fr   -- (f(z), W)
+  -> Bool         -- 0/1
 pcV SRS{..} maxm commitment z (v, w)
   = eA <> eB == eC
   where
-    difference = -srsD + maxm
-    hxi = if difference >= 0
+    eA, eB, eC :: GT BLS12381
+    eA = pairing w (hPositiveAlphaX V.! 1)                                     -- e(W, h^{alpha*x})
+    eB = pairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX V.! 0) -- e(g^v W^{-z}, h^{alpha})
+    eC = pairing commitment hxi                                                -- e(F, h^{x^{-d+max}})
+    difference = -srsD + maxm                        -- -d+max
+    hxi = if difference >= 0                         -- h^{x^{-d+max}}
           then hPositiveX V.! difference
           else hNegativeX V.! (abs difference - 1)
-    eA, eB, eC :: GT BLS12381
-    eA = pairing w (hPositiveAlphaX V.! 1) -- when i = 1
-    eB = pairing ((gen `mul` v) <> (w `mul` negate z)) (hPositiveAlphaX V.! 0) -- when i = 0
-    eC = pairing commitment hxi

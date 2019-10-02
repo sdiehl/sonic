@@ -42,11 +42,11 @@ hscP srs@SRS{..} weights ys = do
   u <- rnd
   let suX = evalX u (sPoly weights)
       commit = commitPoly srs srsD suX
-      sW = zipWith (\yi si -> openPoly srs si u (evalY yi (sPoly weights))) ys ss
-      sQ = (\yi -> openPoly srs commit yi suX) <$> ys
+      sW = zipWith (\yi si -> openPoly srs u (evalY yi (sPoly weights))) ys ss
+      sQ = (\yi -> openPoly srs yi suX) <$> ys
   -- Random oracle
   z <- rnd
-  let (_suz, qz) = openPoly srs commit z suX
+  let (_suz, qz) = openPoly srs z suX
   pure HscProof
           { hscS = ss
           , hscW = sW

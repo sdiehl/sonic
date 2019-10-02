@@ -36,8 +36,8 @@ prop_rPoly_prop x y = QCM.monadicIO $ do
 -- Constant term in polynomial r[X, Y] is zero
 prop_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_rPoly_zero_constant x y = QCM.monadicIO $ do
-  aL <- QCM.run $ replicateM 4 rnd
-  aR <- QCM.run $ replicateM 4 rnd
+  aL <- QCM.run $ replicateM 10 rnd
+  aR <- QCM.run $ replicateM 10 rnd
   let aO = zipWith (*) aL aR
       rXY = rPoly @Fr (Assignment aL aR aO)
   r <- QCM.run rnd
