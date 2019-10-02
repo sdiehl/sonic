@@ -9,5 +9,4 @@ extra-deps:
   - pairing-1.0.0
 #  - poly-0.3.2.0
   - semirings-0.5.1
-  - git: https://github.com/adjoint-io/bulletproofs.git
-    commit: 42096d96e6c34ca2835881298efc0111930ae97b
+  - bulletproofs-1.1.0

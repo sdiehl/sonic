@@ -47,19 +47,12 @@ packages:
   original:
     hackage: semirings-0.5.1
 - completed:
-    cabal-file:
-      size: 5159
-      sha256: 2672cd184bece69b7ad249bf79b032814620706cb7f9f02c0089189ae9716b3b
-    name: bulletproofs
-    version: 1.0.1
-    git: https://github.com/adjoint-io/bulletproofs.git
+    hackage: bulletproofs-1.1.0@sha256:866a6543e13fd0ba7b237140ee4fa9cf54eb00ee077472f33acb3490d13f7835,5127
     pantry-tree:
-      size: 2469
-      sha256: 75cb451333a82fe6b26778b3241983d757f84b3b0f9fd5bd4ceef39f32b6a8e0
-    commit: 42096d96e6c34ca2835881298efc0111930ae97b
+      size: 2191
+      sha256: 90f49d9073b529790645f00c6db1eb2939b33e380bca21d0f030da1027a192f5
   original:
-    git: https://github.com/adjoint-io/bulletproofs.git
-    commit: 42096d96e6c34ca2835881298efc0111930ae97b
+    hackage: bulletproofs-1.1.0
 snapshots:
 - completed:
     size: 498398
