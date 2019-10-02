@@ -36,14 +36,12 @@ prop_rPoly_prop x y = QCM.monadicIO $ do
 -- Constant term in polynomial r[X, Y] is zero
 prop_rPoly_zero_constant :: Fr -> Fr -> Property
 prop_rPoly_zero_constant x y = QCM.monadicIO $ do
-  aL <- QCM.run $ replicateM 10 rnd
-  aR <- QCM.run $ replicateM 10 rnd
+  aL <- QCM.run $ replicateM 4 rnd
+  aR <- QCM.run $ replicateM 4 rnd
   let aO = zipWith (*) aL aR
       rXY = rPoly @Fr (Assignment aL aR aO)
   r <- QCM.run rnd
-  pure $ case flip eval r <$> getZeroCoeff rXY of
-           Nothing -> panic "Zero coeff does not exist"
-           Just z -> z === 0
+  pure $ 0 === maybe 0 (`eval` r) (getZeroCoeff rXY)
 
 -- Constant term in polynomial s[X, Y] is zero
 prop_sPoly_zero_constant :: Fr -> Fr -> Property
@@ -51,9 +49,7 @@ prop_sPoly_zero_constant x y = QCM.monadicIO $ do
   (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
   let sXY = sPoly weights
   r <- lift rnd
-  pure $ case flip eval r <$> getZeroCoeff sXY of
-           Nothing -> panic "Zero coeff does not exist"
-           Just (z :: Fr) -> z === 0
+  pure $ 0 === maybe 0 (`eval` r) (getZeroCoeff sXY)
 
 -- Constant term in polynomial (r[X, Y] + s[X, Y]) is zero
 prop_sPoly_plus_rPoly_zero_constant :: Fr -> Fr -> Property
@@ -63,9 +59,7 @@ prop_sPoly_plus_rPoly_zero_constant x y = QCM.monadicIO $ do
       sXY = sPoly weights
       rXY' = rXY + sXY
   r <- lift rnd
-  pure $ case flip eval r <$> getZeroCoeff rXY' of
-           Nothing -> panic "Zero coeff does not exist"
-           Just z -> z === 0
+  pure $ 0 === maybe 0 (`eval` r) (getZeroCoeff rXY')
 
 -- | Constant term of t(X, Y) is zero, thus
 -- demonstrating that the constraint system is satisfied
@@ -86,6 +80,4 @@ prop_tPoly_zero_constant = QCM.monadicIO $ do
           tP = tPoly rXY sXY kY
 
       r <- rnd
-      case flip eval r <$> getZeroCoeff tP of
-        Nothing -> panic "Zero coeff does not exist"
-        Just z -> pure z
+      pure $ maybe 0 (`eval` r) (getZeroCoeff tP)

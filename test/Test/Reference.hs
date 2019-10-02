@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, NamedFieldPuns, OverloadedLists #-}
+{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 module Test.Reference where
 
 import Protolude
@@ -11,26 +11,11 @@ import qualified Data.Vector as V
 
 import Test.QuickCheck
 
-data Coeffs f = Coeffs
-  { negCoeffs :: [f]
-  , zeroCoeff :: Maybe f
-  , posCoeffs :: [f]
-  }
-
-getCoeffs :: VPoly f -> Coeffs f
-getCoeffs poly
-  = if expL < 0
-    then Coeffs
-         (take (abs expL) coeffsL)
-         (head $ drop (abs expL) coeffsL)
-         (drop ((abs expL) + 1) coeffsL)
-    else Coeffs [] (head coeffsL) (drop 1 coeffsL)
-  where
-    expL = fst (unPoly poly V.! 0)
-    coeffsL = V.toList $ snd <$> unPoly poly
-
 getZeroCoeff :: VPoly f -> Maybe f
-getZeroCoeff = zeroCoeff . getCoeffs
+getZeroCoeff p = case filter ((==) 0 . fst) . V.toList . unPoly $ p of
+  [] -> Nothing
+  [(_, z)] -> Just z
+  _ -> panic "Impossibly many zero coefficients"
 
 -------------
 -- Examples

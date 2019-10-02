@@ -51,9 +51,9 @@ test_tXy_commit_scheme = localOption (QuickCheckTests 25) $
           tP = tPoly rXY sXY kY
 
       r <- rnd
-      case flip eval r <$> getZeroCoeff tP of
-        Nothing -> panic "Zero coeff does not exist"
-        Just z -> pure z
+      pure $ case flip eval r <$> getZeroCoeff tP of
+        Nothing -> 0
+        Just z -> z
 
 -- R ← Commit(bp,srs,n,r(X,1))
 -- (a=r(z,1),Wa) ← Open(R,z,r(X,1))

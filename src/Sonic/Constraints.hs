@@ -18,6 +18,7 @@ import qualified Data.Vector as V
 
 import Sonic.Utils (BiVPoly, fromX, fromY, evalY)
 
+-- r(X,Y) = \sum_{i=1}^n (a_i X^i Y^i + b_i X^{-i} Y^{-i} + c_i X^{-i-n} Y^{-i-n}
 rPoly
   :: (Eq f, Num f)
   => Assignment f
@@ -25,7 +26,7 @@ rPoly
 rPoly Assignment{..} =
   toPoly . V.fromList $ concat (zipWith4 f aL aR aO [1..])
   where
-    f ai bi ci i = [(i, monomial i ai), (-i, monomial (-1) bi), (-i - n, monomial (-i - n) ci)]
+    f ai bi ci i = [(i, monomial i ai), (-i, monomial (-i) bi), (-i - n, monomial (-i - n) ci)]
     n = length aL
 
 sPoly
