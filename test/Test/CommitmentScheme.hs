@@ -70,7 +70,8 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 25) $
       cns <- lift $ replicateM 4 rnd
       let rXY = rPoly assignment
           sumcXY :: BiVPoly Fr
-          sumcXY = scale (negate (2 * n + 4)) 1 (toPoly . V.fromList $ (zipWith (\cni i -> (negate (2 * n + i), monomial 0 cni)) cns [1..]))
+          sumcXY = toPoly . V.fromList $
+            zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
           polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalY 1 polyR')
           opening = openPoly srs pZ (evalY 1 polyR')
@@ -94,7 +95,8 @@ test_rX1YZ_commit_scheme = localOption (QuickCheckTests 25) $
       cns <- lift $ replicateM 4 rnd
       let rXY = rPoly assignment
           sumcXY :: BiVPoly Fr
-          sumcXY = scale (negate (2 * n + 4)) 1 (toPoly . V.fromList $ (zipWith (\cni i -> (negate (2 * n + i), monomial 0 cni)) cns [1..]))
+          sumcXY = toPoly . V.fromList $
+            zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
           polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalY 1 polyR')
           opening = openPoly srs (pY * pZ) (evalY 1 polyR')

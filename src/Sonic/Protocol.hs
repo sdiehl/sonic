@@ -57,7 +57,8 @@ prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
     -- zkP_1(info,a,b,c) -> R
     cns <- replicateM 4 rnd                 -- c_{n+1}, c_{n+2}, c_{n+3}, c_{n+4} <- F_p
     let sumcXY :: BiVPoly Fr                -- \sum_{i=1}^4 c_{n+i}X^{-2n-i}Y^{-2n-i}
-        sumcXY = toPoly . V.fromList $ zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
+        sumcXY = toPoly . V.fromList $
+          zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
         polyR' = rPoly assignment + sumcXY  -- r(X, Y) <- r(X, Y) + \sum_{i=1}^4 c_{n+i}X^{-2n-i}Y^{-2n-i}
         commitR = commitPoly srs (fromIntegral n) (evalY 1 polyR') -- R <- Commit(bp,srs,n,r(X,1))
 
