@@ -20,4 +20,4 @@ test_sonic = localOption (QuickCheckTests 25)
     d <- lift $ randomD n
     let srs = SRS.new d pX pAlpha
     (proof, rndOracle@RndOracle{..}) <- lift $ prove srs assignment arithCircuit
-    QCM.assert $ verify srs arithCircuit proof rndOracleY rndOracleZ rndOracleYs
+    QCM.assert $ verify srs arithCircuit proof rndOracleY rndOracleZ rndOracleYZs

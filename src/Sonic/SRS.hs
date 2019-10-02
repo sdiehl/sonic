@@ -36,7 +36,7 @@ new n x alpha
        , hPositiveX = mul gen . pow x <$> V.fromList [0..d]                       -- {h^{x^i}}_{i=0}^d
        , gNegativeAlphaX = mul gen . (*) alpha . pow xInv <$> V.fromList [1..d]   -- {g^{alpha*x^i}_{i=-d}^{-1}
        -- g^alpha is not shared
-       , gPositiveAlphaX = mul gen . (*) alpha . pow x <$> V.fromList [1..d]      -- {g^{alpha*x^i}}_{i=0}^d
+       , gPositiveAlphaX = mul gen . (*) alpha . pow x <$> V.fromList [1..d]      -- {g^{alpha*x^i}}_{i=1}^d
        , hNegativeAlphaX = mul gen . (*) alpha . pow xInv <$> V.fromList [1..d]   -- {h^{alpha*x^i}_{i=-d}^{-1}
        , hPositiveAlphaX = mul gen . (*) alpha . pow x <$> V.fromList [0..d]      -- {h^{alpha*x^i}}_{i=0}^d
        , srsPairing = pairing gen (mul gen alpha)                                 -- e(g, h^{alpha})

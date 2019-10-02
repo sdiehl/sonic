@@ -11,10 +11,8 @@ import qualified Data.Vector as V
 import Data.Curve (Curve(..), mul)
 import Data.Euclidean (quot)
 import Data.Pairing.BLS12381 (Fr, G1, GT, BLS12381, pairing)
-import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly)
+import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly, scale)
 import Sonic.SRS (SRS(..))
-
-type Opening f = (f, G1 BLS12381)
 
 -- Commit(info, f(X)) -> F:
 commitPoly
@@ -33,11 +31,12 @@ commitPoly SRS{..} maxm fX
     powofx = monomial difference 1 -- X^{d-max}
     xfX = unPoly (powofx * fX)     -- X^{d-max} * f(X)
 
+-- Open(info, F, z, f(X)) -> (f(z), W):
 openPoly
-  :: SRS          -- srs
-  -> Fr           -- z
-  -> VPoly Fr     -- f(X)
-  -> Opening Fr   -- (f(z), W)
+  :: SRS                 -- srs
+  -> Fr                  -- z
+  -> VPoly Fr            -- f(X)
+  -> (Fr, G1 BLS12381)   -- (f(z), W)
 openPoly SRS{..} z fX = (fz, w)
   where
     fz = eval fX z -- f(z)
@@ -48,13 +47,14 @@ openPoly SRS{..} z fX = (fz, w)
                                else (gNegativeX V.! (abs e - 1)) `mul` v -- {g^{w(X)} : X<0}
         ) mempty wPoly
 
+-- pcV(info, F, z, (v, W)) -> 0|1:
 pcV
-  :: SRS          -- srs
-  -> Int          -- max
-  -> G1 BLS12381  -- F
-  -> Fr           -- z
-  -> Opening Fr   -- (f(z), W)
-  -> Bool         -- 0 | 1
+  :: SRS                -- srs
+  -> Int                -- max
+  -> G1 BLS12381        -- F
+  -> Fr                 -- z
+  -> (Fr, G1 BLS12381)  -- (f(z), W)
+  -> Bool               -- 0|1
 pcV SRS{..} maxm commitment z (v, w)
   = eA <> eB == eC
   where
