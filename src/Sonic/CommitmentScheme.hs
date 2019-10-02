@@ -54,7 +54,7 @@ pcV
   -> G1 BLS12381  -- F
   -> Fr           -- z
   -> Opening Fr   -- (f(z), W)
-  -> Bool         -- 0/1
+  -> Bool         -- 0 | 1
 pcV SRS{..} maxm commitment z (v, w)
   = eA <> eB == eC
   where
