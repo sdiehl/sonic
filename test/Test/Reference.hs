@@ -92,10 +92,8 @@ arithCircuitExample2 x z =
 -- "...in our polynomial constraint system 3n < d
 -- (otherwise we cannot commit to t(X,Y)),
 -- thus r(X,Y) has no (−d + n) term."
--- WARNING: Our constraint for the 'D' value used in the setup
--- needs to be greater than 7 times the number of constraints 'n'
 randomD :: MonadRandom m => Int -> m Int
-randomD n = getRandomR (7 * n, 100 * n)
+randomD n = getRandomR (3 * n + 9, 100 * n)
 
 data RandomParams = RandomParams
   { pX :: Fr
@@ -118,7 +116,7 @@ randomParams = do
 
 rndCircuit :: Gen (ArithCircuit Fr, Assignment Fr)
 rndCircuit = do
-  n <- choose (1, 20)
+  n <- choose (1, 1)
   m <- choose (1, n)
   assignment <- arithAssignmentGen n
   circuit <- arithCircuitGen assignment m

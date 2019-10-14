@@ -3,10 +3,9 @@ packages:
   - .
 extra-deps:
   - git: https://github.com/adjoint-io/poly.git
-    commit: e5b9ff009a77ad4549de5fbb4249f74db23ff26a
+    commit: b75b853025ea75ba64f62f39d4524832f0117e36
   - elliptic-curve-0.3.0
   - galois-field-1.0.0
   - pairing-1.0.0
-#  - poly-0.3.2.0
   - semirings-0.5.1
   - bulletproofs-1.1.0

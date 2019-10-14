@@ -33,18 +33,18 @@ extra-source-files:
   - README.md
   - ChangeLog.md
 
-# ghc-options:
-#   -Wall
-#   -Werror
-#   -Wcompat
-#   -Wincomplete-record-updates
-#   -Wredundant-constraints
-#   -Wno-unused-matches
-#   -Wno-name-shadowing
-#   -Wno-type-defaults
-#   -Wno-orphans
-#   -Wno-incomplete-uni-patterns
-#   -Wno-incomplete-patterns
+ghc-options:
+  -Wall
+  -Werror
+  -Wcompat
+  -Wincomplete-record-updates
+  -Wredundant-constraints
+  -Wno-unused-matches
+  -Wno-name-shadowing
+  -Wno-type-defaults
+  -Wno-orphans
+  -Wno-incomplete-uni-patterns
+  -Wno-incomplete-patterns
 
 library:
   exposed-modules:

@@ -35,7 +35,7 @@ sonicProtocol circuit assignment x = do
     -- Number of multiplication constraints
     n = length $ aL assignment
     -- Note that 'd' should be large enough to support the circuit depth 'n'
-    randomD n = getRandomR (7 * n, 100 * n)
+    randomD n = getRandomR (3 * n + 9, 100 * n)
 ```
 
 The following example takes an arithmetic circuit of 5 linear constraints and 2

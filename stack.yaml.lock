@@ -13,11 +13,11 @@ packages:
     git: https://github.com/adjoint-io/poly.git
     pantry-tree:
       size: 2109
-      sha256: 201a9f2617fcfbb4e1bd0158f2b156bb51e5424710ac34ee1d9371dae502eb9d
-    commit: e5b9ff009a77ad4549de5fbb4249f74db23ff26a
+      sha256: 05ebc44a9cc5ecda047aa0179020615941ae5b698586854d121b4219ec3cc114
+    commit: b75b853025ea75ba64f62f39d4524832f0117e36
   original:
     git: https://github.com/adjoint-io/poly.git
-    commit: e5b9ff009a77ad4549de5fbb4249f74db23ff26a
+    commit: b75b853025ea75ba64f62f39d4524832f0117e36
 - completed:
     hackage: elliptic-curve-0.3.0@sha256:7d314ff56011de62370bdd1b840866d1e5ce061972e54be673f5768cbf8d3d42,7072
     pantry-tree:

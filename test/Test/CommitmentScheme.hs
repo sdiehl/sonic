@@ -9,7 +9,6 @@ import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381
 import Data.Poly.Laurent (eval, toPoly, monomial, scale)
 import qualified Data.Vector as V
-
 import Test.Tasty
 import Test.Tasty.QuickCheck hiding (scale)
 import qualified Test.QuickCheck.Monadic as QCM
@@ -51,15 +50,13 @@ test_tXy_commit_scheme = localOption (QuickCheckTests 25) $
           tP = tPoly rXY sXY kY
 
       r <- rnd
-      pure $ case flip eval r <$> getZeroCoeff tP of
-        Nothing -> 0
-        Just z -> z
+      pure $ maybe 0 (flip eval r) (getZeroCoeff tP)
 
 -- R ← Commit(bp,srs,n,r(X,1))
 -- (a=r(z,1),Wa) ← Open(R,z,r(X,1))
 -- check pcV(bp,srs,n,R,z,(a,Wa))
 test_rX1_commit_scheme :: TestTree
-test_rX1_commit_scheme = localOption (QuickCheckTests 25) $
+test_rX1_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "rX1 commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
       (acircuit@ArithCircuit{..}, assignment) <- lift . generate $ rndCircuit
@@ -73,8 +70,8 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 25) $
           sumcXY = toPoly . V.fromList $
             zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
           polyR' = rXY + sumcXY
-          commitment = commitPoly srs (fromIntegral n) (evalY 1 polyR')
-          opening = openPoly srs pZ (evalY 1 polyR')
+          commitment = commitPoly srs (fromIntegral n) (evalY 1 rXY)
+          opening = openPoly srs pZ (evalY 1 rXY)
 
       QCM.assert $ pcV srs n commitment pZ opening
 
@@ -82,7 +79,7 @@ test_rX1_commit_scheme = localOption (QuickCheckTests 25) $
 -- (a=r(z,1),Wa) ← Open(R,yz,r(X,1))
 -- check pcV(bp,srs,n,R,yz,(a,Wa))
 test_rX1YZ_commit_scheme :: TestTree
-test_rX1YZ_commit_scheme = localOption (QuickCheckTests 25) $
+test_rX1YZ_commit_scheme = localOption (QuickCheckTests 50) $
   testProperty "rX1YZ commitment scheme" $ QCM.monadicIO $ do
       RandomParams{..} <- lift randomParams
 

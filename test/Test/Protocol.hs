@@ -12,7 +12,7 @@ import qualified Sonic.SRS as SRS
 import Test.Reference
 
 test_sonic :: TestTree
-test_sonic = localOption (QuickCheckTests 25)
+test_sonic = localOption (QuickCheckTests 50)
   $ testProperty "Sonic protocol" $ QCM.monadicIO $ do
     RandomParams {..} <- lift randomParams
     (arithCircuit, assignment@Assignment{..}) <- lift . generate $ rndCircuit
