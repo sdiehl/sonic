@@ -116,7 +116,7 @@ randomParams = do
 
 rndCircuit :: Gen (ArithCircuit Fr, Assignment Fr)
 rndCircuit = do
-  n <- choose (1, 1)
+  n <- choose (1, 20)
   m <- choose (1, n)
   assignment <- arithAssignmentGen n
   circuit <- arithCircuitGen assignment m
