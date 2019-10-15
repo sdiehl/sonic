@@ -17,7 +17,7 @@ sonicProtocol circuit assignment x = do
   -- Prover
   (proof, rndOracle@RndOracle{..}) <- prove srs assignment circuit
   -- Verifier
-  pure $ verify srs circuit proof rndOracleY rndOracleZ rndOracleYs
+  pure $ verify srs circuit proof rndOracleY rndOracleZ rndOracleYZs
   where
     -- n: Number of multiplication constraints
     n = length $ aL assignment

@@ -5,6 +5,20 @@
 
 packages:
 - completed:
+    cabal-file:
+      size: 2085
+      sha256: d4bef2a796a5567b888e568e8c3117e4c2f5d1108b803ec46bd7804d593ab869
+    name: poly
+    version: 0.3.2.0
+    git: https://github.com/adjoint-io/poly.git
+    pantry-tree:
+      size: 2109
+      sha256: 05ebc44a9cc5ecda047aa0179020615941ae5b698586854d121b4219ec3cc114
+    commit: b75b853025ea75ba64f62f39d4524832f0117e36
+  original:
+    git: https://github.com/adjoint-io/poly.git
+    commit: b75b853025ea75ba64f62f39d4524832f0117e36
+- completed:
     hackage: elliptic-curve-0.3.0@sha256:7d314ff56011de62370bdd1b840866d1e5ce061972e54be673f5768cbf8d3d42,7072
     pantry-tree:
       size: 9500
@@ -26,13 +40,6 @@ packages:
   original:
     hackage: pairing-1.0.0
 - completed:
-    hackage: poly-0.3.2.0@sha256:2cba686238c5074d551a56375f441b18745fbc465cdc3e0acf1701ae928f3ae9,1918
-    pantry-tree:
-      size: 1451
-      sha256: 0a08b17044344cfa9923aefddad623987d12ed2d25738f5acb46f2ec71f8610d
-  original:
-    hackage: poly-0.3.2.0
-- completed:
     hackage: semirings-0.5.1@sha256:597e4070dcb75c3e347566114e140ba343843f80f3e16a456bb2e9e9d1d09430,3743
     pantry-tree:
       size: 610
@@ -46,20 +53,6 @@ packages:
       sha256: 90f49d9073b529790645f00c6db1eb2939b33e380bca21d0f030da1027a192f5
   original:
     hackage: bulletproofs-1.1.0
-- completed:
-    cabal-file:
-      size: 2686
-      sha256: 46854a72d592df309b2cb87c016576abd94cd779b679d4e3483109f64ba55c1e
-    name: polynomial
-    version: 0.7.3
-    git: https://github.com/adjoint-io/polynomial.git
-    pantry-tree:
-      size: 2717
-      sha256: 566dd390216e8943acb1a11d357bf69b30afa8c2e63cb12535be3e2428d105ec
-    commit: 7478e09d90f5d256d1afca49eda166a199f54cac
-  original:
-    git: https://github.com/adjoint-io/polynomial.git
-    commit: 7478e09d90f5d256d1afca49eda166a199f54cac
 snapshots:
 - completed:
     size: 498398

@@ -5,68 +5,88 @@
 {-# LANGUAGE DeriveAnyClass #-}
 module Sonic.Signature
   ( HscProof(..)
-  , hscP
-  , hscV
+  , hscProve
+  , hscVerify
   ) where
 
 import Protolude
 import Bulletproofs.ArithmeticCircuit (GateWeights(..))
 import Control.Monad.Random (MonadRandom)
 import Data.Field.Galois (rnd)
+import Data.List (zip3)
 import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
-import Math.Polynomial.Laurent (evalLaurent)
-
-import Sonic.Utils (evalOnX, evalOnY)
+import Data.Poly.Laurent (eval)
+import Sonic.Utils (BiVPoly, evalX, evalY)
 import Sonic.Constraints (sPoly)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.SRS (SRS(..))
 
-data HscProof f = HscProof
-  { hscS :: [G1 BLS12381]
-  , hscW :: [(f, G1 BLS12381)]
-  , hscQ :: [(f, G1 BLS12381)]
-  , hscQz :: G1 BLS12381
+data HscProof = HscProof
+  { hscS :: [(G1 BLS12381, (Fr, G1 BLS12381))]
+  , hscW :: [(Fr, G1 BLS12381, G1 BLS12381)]
+  , hscQv :: G1 BLS12381
   , hscC :: G1 BLS12381
-  , hscU :: f
-  , hscZ :: f
+  , hscU :: Fr
+  , hscV :: Fr
   } deriving (Eq, Show, Generic, NFData)
 
-hscP
+-- Common input: info = bp, srs, {z_j, y_j}_{j=1}^m, s(X,Y)
+hscProve
   :: (MonadRandom m)
-  => SRS
-  -> GateWeights Fr
-  -> [Fr]
-  -> m (HscProof Fr)
-hscP srs@SRS{..} weights ys = do
-  let ss = commitPoly srs srsD . flip evalOnY (sPoly weights) <$> ys
-  -- Random oracle
-  u <- rnd
-  let suX = evalOnX u (sPoly weights)
-      commit = commitPoly srs srsD suX
-      sW = zipWith (\yi si -> openPoly srs si u (evalOnY yi (sPoly weights))) ys ss
-      sQ = (\yi -> openPoly srs commit yi suX) <$> ys
-  -- Random oracle
-  z <- rnd
-  let (_suz, qz) = openPoly srs commit z suX
-  pure HscProof
-          { hscS = ss
-          , hscW = sW
-          , hscQ = sQ
-          , hscQz = qz
-          , hscC = commit
-          , hscU = u
-          , hscZ = z
-          }
+  => SRS               -- srs
+  -> BiVPoly Fr        -- S(X,Y)
+  -> [(Fr, Fr)]        -- {(y_j, z_j)}_{j=1}^m
+  -> m HscProof
+hscProve srs@SRS{..} sXY yzs = do
+  -- hscP1(info) -> ({S_j,s_j,W_j}_{j=1}^m
+  let ss = (\(yi, zi) ->
+              let sXy = evalY yi sXY            -- s(X,y_j)
+                  cm = commitPoly srs srsD sXy  -- S_j<-Commit(bp,srs,d,s(X,y_j))
+                  op = openPoly srs zi sXy      -- (s_j,W_j)<-Open(S_j,z_j,s(X,y_j))
+              in (cm, op)
+           ) <$> yzs
 
-hscV
+  -- hscV1(info,{S_j,s_j,W_j}_{j=1}^m)->u
+  u <- rnd
+
+  -- hscP2(u) -> {s'_j,W'_j,Q_j}_{j=1}^m
+  let suX = evalX u sXY
+      c = commitPoly srs srsD suX                               -- C <- Commit(bp,srs,d,s(u,X))
+      sW = (\(yi, _zi)
+            -> let (_, wj') = openPoly srs u (evalY yi sXY) -- (s'_j,W'_j)<-Open(S_j,u,s(X,y_j))
+                   (sj', qj) = openPoly srs yi suX           -- (s'_j,Q_j)<-Open(C,y_j,s(u,X))
+               in (sj', wj', qj)
+           ) <$> yzs
+
+  -- hscV2({s'_j,W'_j,Q_j}_{j=1}^m)-> v
+  v <- rnd
+
+  -- hscP2(v) -> Q_v
+  let (_, qv) = openPoly srs v suX  -- (s(u,v),Q_v) <- Open(C,v,s(u,X))
+
+  pure HscProof
+    { hscS = ss
+    , hscW = sW
+    , hscQv = qv
+    , hscC = c
+    , hscU = u
+    , hscV = v
+    }
+
+hscVerify
   :: SRS
-  -> [Fr]
-  -> GateWeights Fr
-  -> HscProof Fr
+  -> BiVPoly Fr        -- S(X,Y)
+  -> [(Fr, Fr)]        -- {(y_j, z_j)}_{j=1}^m
+  -> HscProof
   -> Bool
-hscV srs@SRS{..} ys weights proof@HscProof{..}
-  = let sz = evalLaurent (evalOnY hscZ (sPoly weights)) hscU
-    in and
-        $ pcV srs srsD hscC hscZ (sz, hscQz)
-        : (zipWith (flip (pcV srs srsD) hscU) hscS hscW
-        ++ zipWith (pcV srs srsD hscC) ys hscQ)
+hscVerify srs@SRS{..} sXY yzs proof@HscProof{..}
+  = let sv = eval (evalY hscV sXY) hscU
+        checks = foldl' (\acc ((yi, zi), (ci, (si, wi)), (si', wi', qi))
+                         -> and [ acc
+                                , pcV srs srsD ci zi (si, wi)       -- check pcV(bp,srs,S_j,d,z_j,(s_j,W_j)
+                                , pcV srs srsD ci hscU (si', wi')   -- check pcV (bp,srs,S_j,d,u,(s'_j,W'_j))
+                                , pcV srs srsD hscC yi (si', qi)    -- check pcV(bp,srs,C,d,y_j,(s'_j,Q_j)
+                                ]
+                        ) True (zip3 yzs hscS hscW)
+        check = pcV srs srsD hscC hscV (sv, hscQv) -- check pcV(bp,srs,C,d,v,(s_v,Q_v))
+    in check && checks

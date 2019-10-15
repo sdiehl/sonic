@@ -6,29 +6,16 @@ import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWei
 import Control.Monad.Random (MonadRandom, getRandomR)
 import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381 (Fr)
-import Math.Polynomial.Laurent
+import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly)
+import qualified Data.Vector as V
+
 import Test.QuickCheck
 
-data Coeffs f = Coeffs
-  { negCoeffs :: [f]
-  , zeroCoeff :: Maybe f
-  , posCoeffs :: [f]
-  }
-
-getCoeffs :: Laurent f -> Coeffs f
-getCoeffs poly
-  = if expL < 0
-    then Coeffs
-         (take (abs expL) coeffsL)
-         (head $ drop (abs expL) coeffsL)
-         (drop ((abs expL) + 1) coeffsL)
-    else Coeffs [] (head coeffsL) (drop 1 coeffsL)
-  where
-    expL = expLaurent poly
-    coeffsL = coeffsLaurent poly
-
-getZeroCoeff :: Laurent f -> Maybe f
-getZeroCoeff = zeroCoeff. getCoeffs
+getZeroCoeff :: VPoly f -> Maybe f
+getZeroCoeff p = case filter ((==) 0 . fst) . V.toList . unPoly $ p of
+  [] -> Nothing
+  [(_, z)] -> Just z
+  _ -> panic "Impossibly many zero coefficients"
 
 -------------
 -- Examples
@@ -105,10 +92,8 @@ arithCircuitExample2 x z =
 -- "...in our polynomial constraint system 3n < d
 -- (otherwise we cannot commit to t(X,Y)),
 -- thus r(X,Y) has no (−d + n) term."
--- WARNING: Our constraint for the 'D' value used in the setup
--- needs to be greater than 7 times the number of constraints 'n'
 randomD :: MonadRandom m => Int -> m Int
-randomD n = getRandomR (7 * n, 100 * n)
+randomD n = getRandomR (3 * n + 9, 100 * n)
 
 data RandomParams = RandomParams
   { pX :: Fr

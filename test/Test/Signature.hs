@@ -11,6 +11,7 @@ import Data.Field.Galois (rnd)
 
 import Sonic.Signature
 import qualified Sonic.SRS as SRS
+import Sonic.Constraints (sPoly)
 
 import Test.Reference
 
@@ -27,6 +28,9 @@ test_signatures_of_computation
 
         d <- lift $ randomD n
         let srs = SRS.new d pX pAlpha
+            sXY = sPoly weights
         ys <- lift $ replicateM m rnd
-        proof <- lift $ hscP srs weights ys
-        QCM.assert $ hscV srs ys weights proof
+        zs <- lift $ replicateM m rnd
+        let yzs = zip ys zs
+        proof <- lift $ hscProve srs sXY yzs
+        QCM.assert $ hscVerify srs sXY yzs proof

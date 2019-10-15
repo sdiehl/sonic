@@ -1,38 +1,26 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE TypeApplications #-}
 module Sonic.Utils
-  ( BiVariateLaurent
-  , evalOnX
-  , evalOnY
-  , convertToTwoVariateX
-  , convertToTwoVariateY
+  ( BiVPoly
+  , evalX
+  , evalY
+  , fromX
+  , fromY
   ) where
 
 import Protolude
-import Math.Polynomial.Laurent (Laurent, newLaurent, evalLaurent, expLaurent, coeffsLaurent)
-import Data.Field.Galois (pow)
-import Data.Pairing.BLS12381 (Fr)
+import Data.Poly.Laurent (VPoly, eval, monomial, scale, toPoly, unPoly)
+import Data.Field.Galois (GaloisField(..), pow)
 
-type BiVariateLaurent f = Laurent (Laurent f)
+type BiVPoly k = VPoly (VPoly k)
 
-evalOnY :: Fr -> BiVariateLaurent Fr -> Laurent Fr
-evalOnY y l
-  = newLaurent (expLaurent l) ((\l' -> evalLaurent l' y) <$> (coeffsLaurent l))
+evalX :: GaloisField k => k -> BiVPoly k -> VPoly k
+evalX x = sum . (<$>) (uncurry (scale 0 . pow x . fromIntegral)) . unPoly
 
-evalOnX :: Fr -> BiVariateLaurent Fr -> Laurent Fr
-evalOnX x l
-  = sum $ zipWith f [expLaurent l ..] (coeffsLaurent l)
-  where
-    f ex lau = lau * (newLaurent 0 [x `pow` fromIntegral ex])
+evalY :: GaloisField k => k -> BiVPoly k -> VPoly k
+evalY x = toPoly . ((<$>) . (<$>) . flip eval) x . unPoly
 
--- f(X) -> f(X, 0)
-convertToTwoVariateX :: (Num f, Eq f) => Laurent f -> BiVariateLaurent f
-convertToTwoVariateX l
-  = newLaurent (expLaurent l) ((\e -> newLaurent 0 [e]) <$> (coeffsLaurent l))
+-- toPoly $ (<$>) (monomial 0) <$> unPoly p
+fromX :: GaloisField k => VPoly k -> BiVPoly k
+fromX = toPoly . ((<$>) . (<$>) . monomial) 0 . unPoly
 
--- f(Y) -> f(0, Y)
-convertToTwoVariateY :: (Num f, Eq f) => Laurent f -> BiVariateLaurent f
-convertToTwoVariateY l = newLaurent 0 [l]
+fromY :: GaloisField k => VPoly k -> BiVPoly k
+fromY = monomial 0
