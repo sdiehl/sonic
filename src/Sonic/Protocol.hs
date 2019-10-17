@@ -16,7 +16,7 @@ import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Data.Field.Galois (rnd)
-import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly, scale)
+import Data.Poly.Laurent (monomial, toPoly, eval)
 import qualified Data.Vector as V
 
 import Sonic.SRS (SRS(..))
