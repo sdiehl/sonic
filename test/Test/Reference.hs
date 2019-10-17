@@ -6,7 +6,7 @@ import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWei
 import Control.Monad.Random (MonadRandom, getRandomR)
 import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381 (Fr)
-import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly)
+import Data.Poly.Laurent (VPoly, unPoly)
 import qualified Data.Vector as V
 
 import Test.QuickCheck

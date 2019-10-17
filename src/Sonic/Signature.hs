@@ -10,14 +10,12 @@ module Sonic.Signature
   ) where
 
 import Protolude
-import Bulletproofs.ArithmeticCircuit ()
 import Control.Monad.Random (MonadRandom)
 import Data.Field.Galois (rnd)
 import Data.List (zip3)
 import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 import Data.Poly.Laurent (eval)
 import Sonic.Utils (BiVPoly, evalX, evalY)
-import Sonic.Constraints ()
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.SRS (SRS(..))
 
