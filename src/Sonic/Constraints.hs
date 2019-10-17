@@ -13,7 +13,7 @@ import Protolude hiding (head)
 import Bulletproofs.ArithmeticCircuit (Assignment(..), GateWeights(..))
 import Data.List (zipWith4, head, (!!))
 import Data.Pairing.BLS12381 (Fr)
-import Data.Poly.Laurent (VPoly, eval, scale, monomial, toPoly, unPoly, unPoly)
+import Data.Poly.Laurent (VPoly, monomial, toPoly)
 import qualified Data.Vector as V
 
 import Sonic.Utils (BiVPoly, fromX, fromY, evalY)
