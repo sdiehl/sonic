@@ -53,6 +53,11 @@ runExample = do
 
 The complete code of the example above can be found [here](examples/Main.hs).
 
+## Disclaimer
+
+This is experimental code meant for research-grade projects only. Please do not
+use this code in production until it has matured significantly.
+
 References
 ----------
 
