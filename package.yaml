@@ -8,16 +8,16 @@ github:      adjoint-io/sonic
 category:    Cryptography
 
 dependencies:
-  - base >= 4.7 && < 5
-  - protolude
-  - bulletproofs
-  - elliptic-curve >= 0.3
-  - galois-field >= 1.0
-  - MonadRandom
-  - pairing
-  - poly
-  - semirings
-  - vector
+  - base            >=4.7      && <5
+  - bulletproofs    >=1.1      && <2.0
+  - elliptic-curve  >=0.3      && <0.4
+  - galois-field    >=1.0      && <1.1
+  - MonadRandom     >=0.5.1.1  && <0.6
+  - pairing         >= 1.0     && <1.1
+  - poly            >= 0.3     && <0.4
+  - protolude       >=0.2.3    && <0.3
+  - semirings       >=0.5.1    && <0.6
+  - vector          >=0.12.0.0 && <0.13
 
 default-extensions:
   - LambdaCase
@@ -63,11 +63,11 @@ tests:
     source-dirs: test
     dependencies:
       - sonic
-      - QuickCheck
-      - tasty
-      - tasty-discover
-      - tasty-hunit
-      - tasty-quickcheck
+      - tasty            >=1.2      && <1.3
+      - tasty-discover   >=4.2.1    && <4.3
+      - tasty-hunit      >=0.10.0.2 && <0.11
+      - tasty-quickcheck >=0.10.0.0 && <0.11
+      - QuickCheck       >=2.12.0   && <2.14
 
 benchmarks:
   sonic-benchmarks:
@@ -77,11 +77,11 @@ benchmarks:
     main: Main.hs
     dependencies:
       - sonic
-      - criterion
-      - QuickCheck
-      - tasty
-      - tasty-quickcheck
-      - tasty-hunit
+      - criterion        >=1.5.6.1  && <1.6
+      - QuickCheck       >=2.12.0   && <2.14
+      - tasty            >=1.2      && <1.3
+      - tasty-quickcheck >=0.10.0.0 && <0.11
+      - tasty-hunit      >=0.10.0.0 && <0.11
     other-modules:
       - Test.Reference
 
@@ -90,11 +90,11 @@ executables:
     main: Main
     dependencies:
       - sonic
-      - tasty
-      - tasty-discover
-      - tasty-hunit
-      - tasty-quickcheck
-      - QuickCheck
+      - tasty            >=1.2      && <1.3
+      - tasty-discover   >=4.2.1    && <4.3
+      - tasty-hunit      >=0.10.0.0 && <0.11
+      - tasty-quickcheck >=0.10.0.0 && <0.11
+      - QuickCheck       >=2.12.0   && <2.14
     ghc-options:
       -threaded
       -rtsopts
