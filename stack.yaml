@@ -2,10 +2,15 @@ resolver: lts-13.23
 packages:
   - .
 extra-deps:
-  - git: https://github.com/adjoint-io/poly.git
-    commit: b75b853025ea75ba64f62f39d4524832f0117e36
+  - git: https://github.com/Bodigrim/poly.git
+    commit: 0ef404be5deed9fa71507fa3e3be72a22f2958d4
+  - git: https://github.com/adjoint-io/galois-field.git
+    commit: b59ecd8e7b8f563d13f598534fccb838b5a22dfc
   - elliptic-curve-0.3.0
-  - galois-field-1.0.0
   - pairing-1.0.0
-  - semirings-0.5.1
   - bulletproofs-1.1.0
+  - bitvec-1.0.3.0
+  - mod-0.1.1.0
+  - semirings-0.5.3
+  - vector-algorithms-0.8.0.3
+allow-newer: true

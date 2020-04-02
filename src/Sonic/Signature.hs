@@ -14,8 +14,8 @@ import Control.Monad.Random (MonadRandom)
 import Data.Field.Galois (rnd)
 import Data.List (zip3)
 import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
-import Data.Poly.Laurent (eval)
-import Sonic.Utils (BiVPoly, evalX, evalY)
+import Data.Poly.Sparse.Laurent (eval)
+import Sonic.Utils (BiVLaurent, evalX, evalY)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.SRS (SRS(..))
 
@@ -32,7 +32,7 @@ data HscProof = HscProof
 hscProve
   :: (MonadRandom m)
   => SRS               -- srs
-  -> BiVPoly Fr        -- S(X,Y)
+  -> BiVLaurent Fr     -- S(X,Y)
   -> [(Fr, Fr)]        -- {(y_j, z_j)}_{j=1}^m
   -> m HscProof
 hscProve srs@SRS{..} sXY yzs = do
@@ -73,7 +73,7 @@ hscProve srs@SRS{..} sXY yzs = do
 
 hscVerify
   :: SRS
-  -> BiVPoly Fr        -- S(X,Y)
+  -> BiVLaurent Fr     -- S(X,Y)
   -> [(Fr, Fr)]        -- {(y_j, z_j)}_{j=1}^m
   -> HscProof
   -> Bool

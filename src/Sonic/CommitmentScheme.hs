@@ -9,16 +9,18 @@ module Sonic.CommitmentScheme
 import Protolude hiding (quot)
 import qualified Data.Vector as V
 import Data.Curve (Curve(..), mul)
-import Data.Euclidean (quot)
+import Data.Euclidean (divide)
+import Data.Maybe (fromJust)
 import Data.Pairing.BLS12381 (Fr, G1, GT, BLS12381, pairing)
-import Data.Poly.Laurent (VPoly, eval, monomial, toPoly, unPoly)
+import Data.Poly.Sparse.Laurent (VLaurent, eval, monomial)
+import qualified GHC.Exts
 import Sonic.SRS (SRS(..))
 
 -- Commit(info, f(X)) -> F:
 commitPoly
   :: SRS           -- srs
   -> Int           -- max
-  -> VPoly Fr      -- f(X)
+  -> VLaurent Fr   -- f(X)
   -> G1 BLS12381   -- F
 commitPoly SRS{..} maxm fX
   = foldl' (\acc (e, v)  -> acc <> if e > 0
@@ -26,25 +28,24 @@ commitPoly SRS{..} maxm fX
              else (gNegativeAlphaX V.! (abs e - 1)) `mul` v  -- {g^{alpha*X^{d-max}*f(X) : X>0}
            ) mempty xfX
   where
-    difference = srsD - maxm       -- d-max
-    powofx = monomial difference 1 -- X^{d-max}
-    xfX = unPoly (powofx * fX)     -- X^{d-max} * f(X)
+    difference = srsD - maxm            -- d-max
+    powofx = monomial difference 1      -- X^{d-max}
+    xfX = GHC.Exts.toList (powofx * fX) -- X^{d-max} * f(X)
 
 -- Open(info, F, z, f(X)) -> (f(z), W):
 openPoly
   :: SRS                 -- srs
   -> Fr                  -- z
-  -> VPoly Fr            -- f(X)
+  -> VLaurent Fr         -- f(X)
   -> (Fr, G1 BLS12381)   -- (f(z), W)
 openPoly SRS{..} z fX = (fz, w)
   where
     fz = eval fX z -- f(z)
-    -- wPoly = unPoly $ (fX - monomial 0 fz) `quot` toPoly (V.fromList [(0, -z), (1, 1)]) -- w(X) = (f(X) - f(z))/(X-z)
-    wPoly = (fX - monomial 0 fz) `quot` toPoly (V.fromList [(0, -z), (1, 1)]) -- w(X) = (f(X) - f(z))/(X-z)
+    wPoly = fromJust $ (fX - monomial 0 fz) `divide` GHC.Exts.fromList [(0, -z), (1, 1)] -- w(X) = (f(X) - f(z))/(X-z)
     w = foldl' (\acc (e, v) -> acc <> if e >= 0
                  then (gPositiveX V.! e) `mul` v           -- {g^{w(X)} : X>=0}
                  else (gNegativeX V.! (abs e - 1)) `mul` v -- {g^{w(X)} : X<0}
-               ) mempty (unPoly wPoly)
+               ) mempty (GHC.Exts.toList wPoly)
 
 -- pcV(info, F, z, (v, W)) -> 0|1:
 pcV

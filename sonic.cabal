@@ -62,7 +62,7 @@ library
     , galois-field    >=1.0      && <1.1
     , MonadRandom     >=0.5.1.1  && <0.6
     , pairing         >=1.0      && <1.1
-    , poly            >=0.3      && <0.4
+    , poly            >=0.4      && <0.5
     , protolude       >=0.2.3    && <0.3
     , semirings       >=0.5.1    && <0.6
     , vector          >=0.12.0.0 && <0.13
@@ -96,7 +96,7 @@ executable sonic-example
     , galois-field      >=1.0      && <1.1
     , MonadRandom       >=0.5.1.1  && <0.6
     , pairing           >=1.0      && <1.1
-    , poly              >=0.3      && <0.4
+    , poly              >=0.4      && <0.5
     , protolude         >=0.2.3    && <0.3
     , QuickCheck        >=2.12.0   && <2.14
     , semirings         >=0.5.1    && <0.6
@@ -143,7 +143,7 @@ test-suite sonic-test
     , galois-field      >=1.0      && <1.1
     , MonadRandom       >=0.5.1.1  && <0.6
     , pairing           >=1.0      && <1.1
-    , poly              >=0.3      && <0.4
+    , poly              >=0.4      && <0.5
     , protolude         >=0.2.3    && <0.3
     , QuickCheck        >=2.12.0   && <2.14
     , semirings         >=0.5.1    && <0.6
@@ -184,7 +184,7 @@ benchmark sonic-benchmarks
     , galois-field      >=1.0      && <1.1
     , MonadRandom       >=0.5.1.1  && <0.6
     , pairing           >=1.0      && <1.1
-    , poly              >=0.3      && <0.4
+    , poly              >=0.4      && <0.5
     , protolude         >=0.2.3    && <0.3
     , QuickCheck        >=2.12.0   && <2.14
     , semirings         >=0.5.1    && <0.6

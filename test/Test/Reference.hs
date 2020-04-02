@@ -1,18 +1,19 @@
 {-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 module Test.Reference where
 
-import Protolude
+import Protolude hiding (Semiring)
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Control.Monad.Random (MonadRandom, getRandomR)
 import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381 (Fr)
-import Data.Poly.Laurent (VPoly, unPoly)
-import qualified Data.Vector as V
+import Data.Poly.Sparse.Laurent (VLaurent)
+import Data.Semiring (Semiring)
+import qualified GHC.Exts
 
 import Test.QuickCheck
 
-getZeroCoeff :: VPoly f -> Maybe f
-getZeroCoeff p = case filter ((==) 0 . fst) . V.toList . unPoly $ p of
+getZeroCoeff :: (Eq f, Semiring f) => VLaurent f -> Maybe f
+getZeroCoeff p = case filter ((==) 0 . fst) . GHC.Exts.toList $ p of
   [] -> Nothing
   [(_, z)] -> Just z
   _ -> panic "Impossibly many zero coefficients"
