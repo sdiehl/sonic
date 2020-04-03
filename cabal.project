@@ -9,3 +9,5 @@ source-repository-package
   type:     git
   location: https://github.com/adjoint-io/galois-field.git
   tag:      b59ecd8e7b8f563d13f598534fccb838b5a22dfc
+
+allow-newer: galois-field:poly
