@@ -26,7 +26,7 @@ exampleRndParams = RandomParams
   , pAlpha = 4
   }
 
-runProver :: IO (Proof Fr, RndOracle Fr)
+runProver :: IO (Proof, RndOracle)
 runProver = do
   let (arithCircuit, assignment) = arithCircuitExample1 exampleX exampleZ
       srs = SRS.new (exampleD (length $ aL assignment)) (pX exampleRndParams) (pAlpha exampleRndParams)
@@ -46,5 +46,5 @@ sonic (arithCircuit, assignment) = bgroup "Sonic"
   , env runProver $ \(~(proof, rndOracle@RndOracle{..})) ->
       bench "Verifier" $
       let srs = SRS.new (exampleD (length $ aL assignment)) (pX exampleRndParams) (pAlpha exampleRndParams)
-      in nf (verify srs arithCircuit proof rndOracleY rndOracleZ) rndOracleYs
+      in nf (verify srs arithCircuit proof rndOracleY rndOracleZ) rndOracleYZs
   ]
