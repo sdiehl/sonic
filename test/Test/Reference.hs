@@ -93,8 +93,10 @@ arithCircuitExample2 x z =
 -- "...in our polynomial constraint system 3n < d
 -- (otherwise we cannot commit to t(X,Y)),
 -- thus r(X,Y) has no (−d + n) term."
+--
+-- Moreover, 'Sonic.Protocol.prove' requires d >= 7n.
 randomD :: MonadRandom m => Int -> m Int
-randomD n = getRandomR (3 * n + 9, 100 * n)
+randomD n = getRandomR (7 * n, 100 * n)
 
 data RandomParams = RandomParams
   { pX :: Fr
