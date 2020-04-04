@@ -24,8 +24,8 @@ commitPoly
   -> G1 BLS12381   -- F
 commitPoly SRS{..} maxm fX
   = foldl' (\acc (e, v)  -> acc <> if e > 0
-             then (gPositiveAlphaX V.! (e - 1)) `mul` v      -- {g^{alpha*X^{d-max}*f(X) : X<0}
-             else (gNegativeAlphaX V.! (abs e - 1)) `mul` v  -- {g^{alpha*X^{d-max}*f(X) : X>0}
+             then (index "commitPoly: gPositiveAlphaX" gPositiveAlphaX (e - 1)) `mul` v      -- {g^{alpha*X^{d-max}*f(X) : X<0}
+             else (index "commitPoly: gNegativeAlphaX" gNegativeAlphaX (abs e - 1)) `mul` v  -- {g^{alpha*X^{d-max}*f(X) : X>0}
            ) mempty xfX
   where
     difference = srsD - maxm            -- d-max
@@ -43,8 +43,8 @@ openPoly SRS{..} z fX = (fz, w)
     fz = eval fX z -- f(z)
     wPoly = fromJust $ (fX - monomial 0 fz) `divide` GHC.Exts.fromList [(0, -z), (1, 1)] -- w(X) = (f(X) - f(z))/(X-z)
     w = foldl' (\acc (e, v) -> acc <> if e >= 0
-                 then (gPositiveX V.! e) `mul` v           -- {g^{w(X)} : X>=0}
-                 else (gNegativeX V.! (abs e - 1)) `mul` v -- {g^{w(X)} : X<0}
+                 then (index "openPoly: gPositiveX" gPositiveX e) `mul` v           -- {g^{w(X)} : X>=0}
+                 else (index "openPoly: gNegativeX" gNegativeX (abs e - 1)) `mul` v -- {g^{w(X)} : X<0}
                ) mempty (GHC.Exts.toList wPoly)
 
 -- pcV(info, F, z, (v, W)) -> 0|1:
@@ -64,5 +64,10 @@ pcV SRS{..} maxm commitment z (v, w)
     eC = pairing commitment hxi                                                -- e(F, h^{x^{-d+max}})
     difference = -srsD + maxm                        -- -d+max
     hxi = if difference >= 0                         -- h^{x^{-d+max}}
-          then hPositiveX V.! difference
-          else hNegativeX V.! (abs difference - 1)
+          then index "pcV: hPositiveX" hPositiveX difference
+          else index "pcV: hNegativeX" hNegativeX (abs difference - 1)
+
+index :: Text -> V.Vector a -> Int -> a
+index annot v e = fromMaybe err (v V.!? e)
+  where
+    err = panic $ annot <> " is not long enough: " <> show e <> " >= " <> show (V.length v)
