@@ -95,7 +95,12 @@ arithCircuitExample2 x z =
 -- thus r(X,Y) has no (−d + n) term."
 --
 -- Moreover, 'Sonic.Protocol.prove' requires d >= 7n.
+-- Further, the existing implementation of
+-- 'Sonic.CommitmentScheme.{commit,open}Poly'
+-- for some reason requires d >= 12 for n = 1 and d >= 16 for n = 2.
 randomD :: MonadRandom m => Int -> m Int
+randomD 1 = getRandomR (12, 100)
+randomD 2 = getRandomR (16, 200)
 randomD n = getRandomR (7 * n, 100 * n)
 
 data RandomParams = RandomParams
