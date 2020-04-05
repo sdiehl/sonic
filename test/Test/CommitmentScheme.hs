@@ -7,8 +7,8 @@ import Bulletproofs.ArithmeticCircuit
 import Control.Monad.Random (MonadRandom)
 import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381
-import Data.Poly.Laurent (eval, toPoly, monomial)
-import qualified Data.Vector as V
+import Data.Poly.Sparse.Laurent (eval, monomial)
+import qualified GHC.Exts
 import Test.Tasty
 import Test.Tasty.QuickCheck hiding (scale)
 import qualified Test.QuickCheck.Monadic as QCM
@@ -86,8 +86,8 @@ test_rX1YZ_commit_scheme = localOption (QuickCheckTests 50) $
       let srs = SRS.new d pX pAlpha
       cns <- lift $ replicateM 4 rnd
       let rXY = rPoly assignment
-          sumcXY :: BiVPoly Fr
-          sumcXY = toPoly . V.fromList $
+          sumcXY :: BiVLaurent Fr
+          sumcXY = GHC.Exts.fromList $
             zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
           polyR' = rXY + sumcXY
           commitment = commitPoly srs (fromIntegral n) (evalY 1 polyR')

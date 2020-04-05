@@ -6,18 +6,32 @@
 packages:
 - completed:
     cabal-file:
-      size: 2085
-      sha256: d4bef2a796a5567b888e568e8c3117e4c2f5d1108b803ec46bd7804d593ab869
+      size: 2127
+      sha256: d5991cbab04deb6792d35190fc2ecb213a8b4544f0bd3e6c99eec2b4b483afc2
     name: poly
-    version: 0.3.2.0
-    git: https://github.com/adjoint-io/poly.git
+    version: 0.4.0.0
+    git: https://github.com/Bodigrim/poly.git
     pantry-tree:
-      size: 2109
-      sha256: 05ebc44a9cc5ecda047aa0179020615941ae5b698586854d121b4219ec3cc114
-    commit: b75b853025ea75ba64f62f39d4524832f0117e36
+      size: 1999
+      sha256: 785b25407fcae95c8d22ee8baaa2e05f989f106a90fea377f2ff2cf385ae9909
+    commit: 0ef404be5deed9fa71507fa3e3be72a22f2958d4
   original:
-    git: https://github.com/adjoint-io/poly.git
-    commit: b75b853025ea75ba64f62f39d4524832f0117e36
+    git: https://github.com/Bodigrim/poly.git
+    commit: 0ef404be5deed9fa71507fa3e3be72a22f2958d4
+- completed:
+    cabal-file:
+      size: 4679
+      sha256: 2f3157954320d032020493e584a4a4f8b1a2c529e8ce40c374eb0ab45706b0ac
+    name: galois-field
+    version: 1.0.1
+    git: https://github.com/adjoint-io/galois-field.git
+    pantry-tree:
+      size: 4578
+      sha256: 2d8b08079f3a9a30272cd853d97b1ef5458a05213d51e21bc36c28ac40e995f8
+    commit: b59ecd8e7b8f563d13f598534fccb838b5a22dfc
+  original:
+    git: https://github.com/adjoint-io/galois-field.git
+    commit: b59ecd8e7b8f563d13f598534fccb838b5a22dfc
 - completed:
     hackage: elliptic-curve-0.3.0@sha256:7d314ff56011de62370bdd1b840866d1e5ce061972e54be673f5768cbf8d3d42,7072
     pantry-tree:
@@ -26,13 +40,6 @@ packages:
   original:
     hackage: elliptic-curve-0.3.0
 - completed:
-    hackage: galois-field-1.0.0@sha256:d44007898c07a6c913a38f78e7246c7785ae3052ca55ad713783345d06a28419,3470
-    pantry-tree:
-      size: 1444
-      sha256: 1b265e1c3062a06a48a535c1681a954c26bee5959a42e97fc0e4fd8b5a90849f
-  original:
-    hackage: galois-field-1.0.0
-- completed:
     hackage: pairing-1.0.0@sha256:709d2e1a98b18327d2fba4efaa6069ef783333c95055ad73416e9401d02000ac,3507
     pantry-tree:
       size: 1693
@@ -40,19 +47,40 @@ packages:
   original:
     hackage: pairing-1.0.0
 - completed:
-    hackage: semirings-0.5.1@sha256:597e4070dcb75c3e347566114e140ba343843f80f3e16a456bb2e9e9d1d09430,3743
-    pantry-tree:
-      size: 610
-      sha256: cc4e01176f1a56c97dc923416a6939dcdc004584cccf8a2b1c67bd156b31179a
-  original:
-    hackage: semirings-0.5.1
-- completed:
     hackage: bulletproofs-1.1.0@sha256:866a6543e13fd0ba7b237140ee4fa9cf54eb00ee077472f33acb3490d13f7835,5127
     pantry-tree:
       size: 2191
       sha256: 90f49d9073b529790645f00c6db1eb2939b33e380bca21d0f030da1027a192f5
   original:
     hackage: bulletproofs-1.1.0
+- completed:
+    hackage: bitvec-1.0.3.0@sha256:f69ed0e463045cb497a7cf1bc808a2e84ea0ce286cf9507983bb6ed8b4bd3993,3977
+    pantry-tree:
+      size: 2372
+      sha256: e3cf4b28e01c3eb9b0cf46a8a2e7eef1ced133d5ad626aaba099cf468007dd90
+  original:
+    hackage: bitvec-1.0.3.0
+- completed:
+    hackage: mod-0.1.1.0@sha256:57f230d5664b1c311d1044c259ef880875e4b3bcbfc7c57eab3bf03fce87f445,1838
+    pantry-tree:
+      size: 464
+      sha256: ca61450dd1d84e6beefba010a7032dfb5a8bc2e8344a369430992c56ec083ad7
+  original:
+    hackage: mod-0.1.1.0
+- completed:
+    hackage: semirings-0.5.3@sha256:4b0d243f88bb07c0673978a37b6b9fd16da44f15e8d552fb08795d9a88a3dc76,3791
+    pantry-tree:
+      size: 610
+      sha256: 0bc3f63a3b92be1c6be2e36c7db8df62e61b2860eba7f083b84e2b16dbaa2d69
+  original:
+    hackage: semirings-0.5.3
+- completed:
+    hackage: vector-algorithms-0.8.0.3@sha256:477ef5ac82fdd28a39536ed0a767faec3425802827abee485be31db5bc6f5e90,3488
+    pantry-tree:
+      size: 1439
+      sha256: 9f04ef44c2459a122f2d5c093b4a9ebc47aaa00284a7bff9793fee7c6783f979
+  original:
+    hackage: vector-algorithms-0.8.0.3
 snapshots:
 - completed:
     size: 498398

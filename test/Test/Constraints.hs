@@ -7,7 +7,7 @@ import Control.Monad.Random (MonadRandom)
 import Data.Field.Galois (rnd)
 import Data.List ((!!))
 import Data.Pairing.BLS12381
-import Data.Poly.Laurent (eval)
+import Data.Poly.Sparse.Laurent (eval)
 import Test.Tasty.QuickCheck
 import qualified Test.QuickCheck.Monadic as QCM
 

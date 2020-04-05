@@ -16,14 +16,14 @@ import Data.Pairing.BLS12381 (Fr, G1, BLS12381)
 import Control.Monad.Random (MonadRandom)
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Data.Field.Galois (rnd)
-import Data.Poly.Laurent (monomial, toPoly, eval)
-import qualified Data.Vector as V
+import Data.Poly.Sparse.Laurent (monomial, eval)
+import qualified GHC.Exts
 
 import Sonic.SRS (SRS(..))
 import Sonic.Constraints (rPoly, sPoly, tPoly, kPoly)
 import Sonic.CommitmentScheme (commitPoly, openPoly, pcV)
 import Sonic.Signature (HscProof(..), hscProve, hscVerify)
-import Sonic.Utils (evalY, BiVPoly)
+import Sonic.Utils (evalY, BiVLaurent)
 
 data Proof = Proof
   { prR :: G1 BLS12381
@@ -56,8 +56,8 @@ prove srs@SRS{..} assignment@Assignment{..} arithCircuit@ArithCircuit{..} =
     else do
     -- zkP_1(info,a,b,c) -> R
     cns <- replicateM 4 rnd                 -- c_{n+1}, c_{n+2}, c_{n+3}, c_{n+4} <- F_p
-    let sumcXY :: BiVPoly Fr                -- \sum_{i=1}^4 c_{n+i}X^{-2n-i}Y^{-2n-i}
-        sumcXY = toPoly . V.fromList $
+    let sumcXY :: BiVLaurent Fr             -- \sum_{i=1}^4 c_{n+i}X^{-2n-i}Y^{-2n-i}
+        sumcXY = GHC.Exts.fromList $
           zipWith (\i cni -> (negate (2 * n + i), monomial (negate (2 * n + i)) cni)) [1..] cns
         polyR' = rPoly assignment + sumcXY  -- r(X, Y) <- r(X, Y) + \sum_{i=1}^4 c_{n+i}X^{-2n-i}Y^{-2n-i}
         commitR = commitPoly srs (fromIntegral n) (evalY 1 polyR') -- R <- Commit(bp,srs,n,r(X,1))

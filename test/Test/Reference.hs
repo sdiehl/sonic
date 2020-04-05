@@ -1,18 +1,19 @@
 {-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 module Test.Reference where
 
-import Protolude
+import Protolude hiding (Semiring)
 import Bulletproofs.ArithmeticCircuit (ArithCircuit(..), Assignment(..), GateWeights(..))
 import Control.Monad.Random (MonadRandom, getRandomR)
 import Data.Field.Galois (rnd)
 import Data.Pairing.BLS12381 (Fr)
-import Data.Poly.Laurent (VPoly, unPoly)
-import qualified Data.Vector as V
+import Data.Poly.Sparse.Laurent (VLaurent)
+import Data.Semiring (Semiring)
+import qualified GHC.Exts
 
 import Test.QuickCheck
 
-getZeroCoeff :: VPoly f -> Maybe f
-getZeroCoeff p = case filter ((==) 0 . fst) . V.toList . unPoly $ p of
+getZeroCoeff :: (Eq f, Semiring f) => VLaurent f -> Maybe f
+getZeroCoeff p = case filter ((==) 0 . fst) . GHC.Exts.toList $ p of
   [] -> Nothing
   [(_, z)] -> Just z
   _ -> panic "Impossibly many zero coefficients"
@@ -92,8 +93,15 @@ arithCircuitExample2 x z =
 -- "...in our polynomial constraint system 3n < d
 -- (otherwise we cannot commit to t(X,Y)),
 -- thus r(X,Y) has no (−d + n) term."
+--
+-- Moreover, 'Sonic.Protocol.prove' requires d >= 7n.
+-- Further, the existing implementation of
+-- 'Sonic.CommitmentScheme.{commit,open}Poly'
+-- for some reason requires d >= 12 for n = 1 and d >= 16 for n = 2.
 randomD :: MonadRandom m => Int -> m Int
-randomD n = getRandomR (3 * n + 9, 100 * n)
+randomD 1 = getRandomR (12, 100)
+randomD 2 = getRandomR (16, 200)
+randomD n = getRandomR (7 * n, 100 * n)
 
 data RandomParams = RandomParams
   { pX :: Fr
